@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftUI Field Guide</title>
+<style>
+  :root{
+    --bg: #F4F1EA;
+    --bg-panel: #FFFFFF;
+    --ink: #2B2622;
+    --ink-soft: #6B6259;
+    --line: #E4DDD1;
+    --accent: #C15F3C;
+    --accent-soft: #F1E0D6;
+    --code-bg: #2B2622;
+    --code-ink: #F4F1EA;
+    --code-accent: #E8A87C;
+    --mono: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+    --serif: 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
+    --sans: -apple-system, 'Inter', 'Segoe UI', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+  }
+
+  /* ---------- Layout ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns: 260px 1fr;
+    min-height:100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    position: sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    padding: 28px 20px;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .brand{
+    font-family: var(--serif);
+    font-size: 21px;
+    letter-spacing: 0.2px;
+    margin: 0 0 4px 2px;
+  }
+  .brand span{ color: var(--accent); }
+  .tagline{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 0 0 22px 2px;
+  }
+
+  .search-wrap{
+    position: relative;
+    margin-bottom: 22px;
+  }
+  #search{
+    width:100%;
+    padding: 10px 12px 10px 34px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    font-size: 13.5px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  #search:focus{
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .search-icon{
+    position:absolute;
+    left:11px; top:50%;
+    transform: translateY(-50%);
+    width:14px; height:14px;
+    opacity:.45;
+  }
+  .search-count{
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin: 6px 2px 0;
+    min-height: 14px;
+  }
+
+  nav.categories a{
+    display:block;
+    padding: 7px 10px;
+    margin-bottom: 2px;
+    border-radius: 6px;
+    color: var(--ink-soft);
+    text-decoration:none;
+    font-size: 13.5px;
+    transition: background .12s ease, color .12s ease;
+  }
+  nav.categories a:hover{ background: var(--accent-soft); color: var(--ink); }
+  nav.categories a.active{ background: var(--accent-soft); color: var(--accent); font-weight:600; }
+  nav.categories .cat-count{
+    float:right;
+    font-size:11px;
+    color: var(--ink-soft);
+    opacity:.7;
+  }
+
+  .sidebar-footer{
+    margin-top: 26px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Main ---------- */
+  main{
+    padding: 48px 56px 100px;
+    max-width: 880px;
+  }
+
+  .hero{
+    margin-bottom: 46px;
+  }
+  .eyebrow{
+    font-size: 11.5px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  h1.title{
+    font-family: var(--serif);
+    font-size: 40px;
+    line-height: 1.1;
+    margin: 0 0 12px;
+    letter-spacing: -0.3px;
+  }
+  .hero p{
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 560px;
+    margin: 0;
+  }
+
+  section.category{
+    margin-bottom: 56px;
+    scroll-margin-top: 24px;
+  }
+  .category-head{
+    display:flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .category-head h2{
+    font-family: var(--serif);
+    font-size: 24px;
+    margin:0;
+  }
+  .category-head .sub{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{
+    border-color: #D8CBBB;
+    box-shadow: 0 2px 14px rgba(43,38,34,0.04);
+  }
+  .card h3{
+    margin: 0 0 4px;
+    font-size: 16.5px;
+    font-family: var(--mono);
+    font-weight: 700;
+  }
+  .card h3 .plain{
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .card .when{
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+  .card .when b{ color: var(--ink); font-weight:600; }
+
+  pre{
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.8px;
+    line-height: 1.55;
+    margin: 0 0 10px;
+  }
+  pre .kw{ color: var(--code-accent); }
+  pre .cm{ color: #9A9188; }
+  pre .st{ color: #C7D9A8; }
+
+  .tip{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 8px;
+  }
+  .tip b{ color: var(--accent); }
+
+  /* ---------- Tables ---------- */
+  table.decision{
+    width:100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+  }
+  table.decision th{
+    text-align:left;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--ink-soft);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.decision td{
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.decision td:first-child, table.decision th:first-child{
+    font-family: var(--mono);
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--accent);
+  }
+  table.decision tr:last-child td{ border-bottom:none; }
+
+  /* ---------- No results ---------- */
+  .empty-state{
+    display:none;
+    text-align:center;
+    padding: 80px 20px;
+    color: var(--ink-soft);
+  }
+  .empty-state h3{
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  mark{
+    background: #F6D9A0;
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background: #D8CBBB; border-radius:8px; }
+
+  @media (max-width: 860px){
+    .shell{ grid-template-columns: 1fr; }
+    .sidebar{ position: static; height:auto; border-right:none; border-bottom:1px solid var(--line); }
+    main{ padding: 32px 20px 80px; }
+    h1.title{ font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <p class="brand">Swift<span>UI</span> Field Guide</p>
+    <p class="tagline">Your "wait, how do I—" reference</p>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search" type="text" placeholder="Search @State, sheet, publisher…" autocomplete="off">
+    </div>
+    <p class="search-count" id="searchCount"></p>
+
+    <nav class="categories" id="catNav">
+      <a href="#property-wrappers" data-cat="property-wrappers">Property Wrappers</a>
+      <a href="#data-flow" data-cat="data-flow">Passing Data</a>
+      <a href="#combine-async" data-cat="combine-async">Combine &amp; Async</a>
+      <a href="#view-modifiers" data-cat="view-modifiers">View Modifiers</a>
+      <a href="#navigation" data-cat="navigation">Navigation &amp; Presentation</a>
+      <a href="#lists-forms" data-cat="lists-forms">Lists &amp; Forms</a>
+      <a href="#layout" data-cat="layout">Layout Tools</a>
+      <a href="#animation-gesture" data-cat="animation-gesture">Animation &amp; Gestures</a>
+      <a href="#decision-tables" data-cat="decision-tables">Quick Decision Tables</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      Everything in one file — search filters cards live, categories jump you there.
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+    <div class="hero">
+      <p class="eyebrow">Beginner → Intermediate</p>
+      <h1 class="title">SwiftUI, when you've forgotten<br>the simple thing.</h1>
+      <p>Property wrappers, data flow, Combine, and the modifiers you always blank on mid-build — searchable in one place.</p>
+    </div>
+
+    <!-- ============ PROPERTY WRAPPERS ============ -->
+    <section class="category" id="property-wrappers">
+      <div class="category-head">
+        <h2>Property Wrappers</h2>
+        <span class="sub">who owns the data, and who just borrows it</span>
+      </div>
+
+      <div class="card" data-tags="state simple value type owner">
+        <h3>@State</h3>
+        <p class="when">Use for <b>value types</b> (Int, String, Bool, struct) <b>owned by this view only</b>. Always mark <b>private</b>.</p>
+        <pre>@State private var count = 0
+@State private var isShowingSheet = false</pre>
+        <div class="tip"><b>Forget this:</b> @State persists across view re-creation — SwiftUI stores it outside the struct.</div>
+      </div>
+
+      <div class="card" data-tags="stateobject observableobject owns lifecycle viewmodel">
+        <h3>@StateObject</h3>
+        <p class="when">Use when <b>this view creates</b> the ObservableObject (you write <code>= SomeClass()</code>). It survives re-renders.</p>
+        <pre>@StateObject private var viewModel = NewsViewModel()</pre>
+        <div class="tip">If you type <b>"= ClassName()"</b> → it's StateObject. Always.</div>
+      </div>
+
+      <div class="card" data-tags="observedobject receives passed child">
+        <h3>@ObservedObject</h3>
+        <p class="when">Use when the object is <b>passed in</b> from a parent, not created here. It does NOT survive if the parent re-creates it.</p>
+        <pre>struct RowView: View {
+    @ObservedObject var viewModel: NewsViewModel
+}</pre>
+        <div class="tip"><b>Bug to avoid:</b> using @ObservedObject at the top of a hierarchy that re-renders often → object resets unexpectedly. Use @StateObject there instead.</div>
+      </div>
+
+      <div class="card" data-tags="published observableobject class notify update ui">
+        <h3>@Published</h3>
+        <p class="when">Goes <b>inside an ObservableObject class</b>. Announces changes so any observing view refreshes.</p>
+        <pre>class AuthViewModel: ObservableObject {
+    @Published var isLoggedIn = false
+    @Published var user: User?
+}</pre>
+        <div class="tip">Only mark properties @Published if the <b>UI actually reads them</b> — extra ones cause needless re-renders.</div>
+      </div>
+
+      <div class="card" data-tags="environment system value colorscheme dismiss">
+        <h3>@Environment</h3>
+        <p class="when">Reads a <b>system value</b> (colorScheme, dismiss action, etc.) implicitly passed down the tree.</p>
+        <pre>@Environment(\.colorScheme) var colorScheme
+@Environment(\.dismiss) var dismiss
+
+Button("Close") { dismiss() }</pre>
+      </div>
+
+      <div class="card" data-tags="environmentobject global shared app wide session">
+        <h3>@EnvironmentObject</h3>
+        <p class="when">Injects a <b>shared object app-wide</b> without passing it through every initializer. Use for auth/session/theme.</p>
+        <pre>// App root
+ContentView()
+    .environmentObject(session)
+
+// Any descendant, any depth
+@EnvironmentObject var session: SessionManager</pre>
+        <div class="tip"><b>Crash risk:</b> if a view expects @EnvironmentObject that was never injected above it, the app crashes at runtime. Always inject at the top (App struct).</div>
+      </div>
+
+      <div class="card" data-tags="binding two way child parent modify write back">
+        <h3>@Binding</h3>
+        <p class="when">Gives a child view a <b>two-way connection</b> to a value owned by the parent. Use the <code>$</code> prefix to pass it.</p>
+        <pre>struct ChildTextField: View {
+    @Binding var name: String
+    var body: some View { TextField("Name", text: $name) }
+}
+// Parent: ChildTextField(name: $name)</pre>
+      </div>
+
+      <div class="card" data-tags="viewbuilder multiple views closure conditional container">
+        <h3>@ViewBuilder</h3>
+        <p class="when">Lets a function/closure return <b>multiple or conditional views</b> stitched together — what makes <code>body { }</code> work at all.</p>
+        <pre>struct CardContainer<Content: View>: View {
+    @ViewBuilder let content: Content
+    var body: some View { VStack { content } }
+}
+
+@ViewBuilder
+func statusView(isLoading: Bool) -> some View {
+    if isLoading { ProgressView() } else { Text("Done") }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="appstorage userdefaults persist simple settings">
+        <h3>@AppStorage</h3>
+        <p class="when">Reads/writes directly to <b>UserDefaults</b> — great for small persisted settings (theme, onboarding flag).</p>
+        <pre>@AppStorage("hasSeenOnboarding") var hasSeenOnboarding = false</pre>
+      </div>
+
+      <div class="card" data-tags="focusstate keyboard textfield focus">
+        <h3>@FocusState</h3>
+        <p class="when">Tracks/controls <b>which field is focused</b> — programmatically show keyboard, move to next field, dismiss keyboard.</p>
+        <pre>@FocusState private var focusedField: Field?
+
+TextField("Email", text: $email)
+    .focused($focusedField, equals: .email)
+
+focusedField = .email   // sets focus programmatically
+focusedField = nil      // dismisses keyboard</pre>
+      </div>
+
+      <div class="card" data-tags="namespace matchedgeometryeffect animation shared transition">
+        <h3>@Namespace</h3>
+        <p class="when">Needed for <b>matchedGeometryEffect</b> — shared element transitions (hero animations between views).</p>
+        <pre>@Namespace private var animation
+
+Image("thumb")
+    .matchedGeometryEffect(id: "hero", in: animation)</pre>
+      </div>
+    </section>
+
+    <!-- ============ DATA FLOW ============ -->
+    <section class="category" id="data-flow">
+      <div class="category-head">
+        <h2>Passing Data Between Screens / Files</h2>
+        <span class="sub">Swift ↔ Swift, Swift ↔ SwiftUI, SwiftUI ↔ SwiftUI</span>
+      </div>
+
+      <div class="card" data-tags="parent to child readonly pass data init">
+        <h3><span class="plain">SwiftUI → SwiftUI, read-only</span></h3>
+        <p class="when">Child just needs the data, won't modify it → pass as a plain <b>let</b> through init.</p>
+        <pre>struct DetailView: View {
+    let article: Article
+}
+NavigationLink(destination: DetailView(article: selectedArticle)) {
+    Text("Open")
+}</pre>
+      </div>
+
+      <div class="card" data-tags="child modifies parent binding two way">
+        <h3><span class="plain">SwiftUI → SwiftUI, child modifies parent's value</span></h3>
+        <p class="when">Use <b>@Binding</b> — see Property Wrappers above.</p>
+      </div>
+
+      <div class="card" data-tags="shared viewmodel many views mvvm">
+        <h3><span class="plain">Shared object across many views</span></h3>
+        <p class="when">Own once with <b>@StateObject</b> at the top, pass down as <b>@ObservedObject</b>, or use <b>.environmentObject()</b> for global reach.</p>
+      </div>
+
+      <div class="card" data-tags="child sends data back parent closure callback">
+        <h3><span class="plain">Sending data back from a child screen</span></h3>
+        <p class="when">Three common patterns, pick by complexity:</p>
+        <pre><span class="cm">// 1. Binding — simplest, same hierarchy</span>
+@Binding var selectedColor: Color
+
+<span class="cm">// 2. Closure callback</span>
+struct PickerView: View {
+    var onSelect: (String) -> Void
+}
+PickerView(onSelect: { picked in self.fruit = picked })
+
+<span class="cm">// 3. Shared ObservableObject — best for async/complex flows</span>
+<span class="cm">// child updates shared object, parent auto-updates via @Published</span></pre>
+      </div>
+
+      <div class="card" data-tags="plain swift class struct no ui service model">
+        <h3><span class="plain">Plain Swift → plain Swift (no UI)</span></h3>
+        <p class="when">Ordinary Swift, no property wrappers needed unless it must trigger UI updates.</p>
+        <pre>struct NetworkService {
+    func fetchUser() -> User { /* ... */ }
+}
+class UserManager {
+    var currentUser: User?
+}</pre>
+      </div>
+
+      <div class="card" data-tags="service model viewmodel bridge mvvm architecture">
+        <h3><span class="plain">Plain Swift file → SwiftUI View (MVVM bridge)</span></h3>
+        <p class="when">Model/Service stay plain Swift. The <b>ViewModel</b> (ObservableObject) is the bridge.</p>
+        <pre>Model (struct)
+   → Service (plain Swift, fetch/transform)
+        → ViewModel (@Published props, ObservableObject)
+             → View (@StateObject / @ObservedObject)</pre>
+      </div>
+
+      <div class="card" data-tags="deep link tab unrelated hierarchy singleton notificationcenter">
+        <h3><span class="plain">Unrelated view hierarchies (deep links, tab switches)</span></h3>
+        <p class="when">Use <b>@EnvironmentObject</b> at the app root, a shared <b>singleton</b> service (<code>.shared</code>) for things like NetworkMonitor, or rarely <b>NotificationCenter</b> for UIKit bridging.</p>
+      </div>
+    </section>
+
+    <!-- ============ COMBINE & ASYNC ============ -->
+    <section class="category" id="combine-async">
+      <div class="category-head">
+        <h2>Combine &amp; Async</h2>
+        <span class="sub">AnyPublisher, .map, .sink, and when to use async/await instead</span>
+      </div>
+
+      <div class="card" data-tags="anypublisher datataskpublisher map decode receive erasetoanypublisher network">
+        <h3><span class="plain">AnyPublisher network call, line by line</span></h3>
+        <pre>func topHeadlines() -> AnyPublisher<NewsResponse, Error> {
+    return URLSession.shared.dataTaskPublisher(for: request)
+        .map(\.data)                                   <span class="cm">// keep only Data</span>
+        .decode(type: NewsResponse.self, decoder: JSONDecoder())  <span class="cm">// Data → Model</span>
+        .receive(on: DispatchQueue.main)                <span class="cm">// switch to main thread</span>
+        .eraseToAnyPublisher()                          <span class="cm">// hide the messy generic type</span>
+}</pre>
+        <div class="tip"><b>.receive(on: .main)</b> is required before touching @Published — UI must update on main thread.</div>
+      </div>
+
+      <div class="card" data-tags="sink subscribe cancellable store consume publisher viewmodel">
+        <h3><span class="plain">Consuming it in a ViewModel</span></h3>
+        <pre>private var cancellables = Set<AnyCancellable>()
+
+func loadHeadlines() {
+    isLoading = true
+    service.topHeadlines()
+        .sink(receiveCompletion: { [weak self] completion in
+            self?.isLoading = false
+            if case .failure(let error) = completion {
+                self?.errorMessage = error.localizedDescription
+            }
+        }, receiveValue: { [weak self] response in
+            self?.articles = response.articles
+        })
+        .store(in: &cancellables)   <span class="cm">// MUST store or it cancels instantly</span>
+}</pre>
+        <div class="tip">Forget <code>.store(in:)</code> and the subscription dies the instant the function returns.</div>
+      </div>
+
+      <div class="card" data-tags="map operator transform combine">
+        <h3><span class="plain">.map — general use</span></h3>
+        <p class="when">Transforms each emitted value, like <code>Array.map</code> but for a stream.</p>
+        <pre>$searchText
+    .map { $0.lowercased() }
+    .sink { print($0) }</pre>
+      </div>
+
+      <div class="card" data-tags="debounce removeduplicates search as you type combine live">
+        <h3><span class="plain">Debounced live search</span></h3>
+        <pre>$searchQuery
+    .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+    .removeDuplicates()
+    .sink { [weak self] query in self?.performSearch(query) }
+    .store(in: &cancellables)</pre>
+      </div>
+
+      <div class="card" data-tags="assign publisher property pipe">
+        <h3><span class="plain">.assign(to:on:)</span></h3>
+        <p class="when">Alternative to <code>.sink</code> when you just want to pipe a value directly into a property, no custom logic.</p>
+        <pre>publisher.assign(to: \.articles, on: self)</pre>
+      </div>
+
+      <div class="card" data-tags="async await task modern network vs combine">
+        <h3><span class="plain">async/await — the modern alternative</span></h3>
+        <p class="when">Prefer for one-shot calls. Use Combine for continuous streams (live search, WebSocket, SSE, multiple @Published sources).</p>
+        <pre>func topHeadlines() async throws -> NewsResponse {
+    let (data, _) = try await URLSession.shared.data(for: request)
+    return try JSONDecoder().decode(NewsResponse.self, from: data)
+}
+
+<span class="cm">// calling it inside a View</span>
+.task {
+    do { articles = try await service.topHeadlines() }
+    catch { errorMessage = error.localizedDescription }
+}</pre>
+      </div>
+    </section>
+
+    <!-- ============ VIEW MODIFIERS ============ -->
+    <section class="category" id="view-modifiers">
+      <div class="category-head">
+        <h2>View Modifiers You Always Forget</h2>
+        <span class="sub">the ones that slip your mind mid-build</span>
+      </div>
+
+      <div class="card" data-tags="onappear task lifecycle load data view appears">
+        <h3><span class="plain">.onAppear vs .task</span></h3>
+        <p class="when">Use <b>.task</b> for async work (auto-cancels if view disappears). Use <b>.onAppear</b> for simple sync side-effects.</p>
+        <pre>.task { await viewModel.load() }
+.onAppear { print("appeared") }</pre>
+      </div>
+
+      <div class="card" data-tags="frame size width height">
+        <h3><span class="plain">.frame</span></h3>
+        <pre>.frame(width: 100, height: 40)
+.frame(maxWidth: .infinity, alignment: .leading)</pre>
+      </div>
+
+      <div class="card" data-tags="padding background cornerradius shadow style card">
+        <h3><span class="plain">Card-style stack (padding / background / cornerRadius / shadow)</span></h3>
+        <pre>.padding(16)
+.background(Color(.systemBackground))
+.cornerRadius(12)
+.shadow(color: .black.opacity(0.08), radius: 8, y: 4)</pre>
+        <div class="tip">Order matters: padding <b>before</b> background so the background includes the padding.</div>
+      </div>
+
+      <div class="card" data-tags="overlay clipshape border stroke rounded">
+        <h3><span class="plain">.overlay + .clipShape (border trick)</span></h3>
+        <pre>.clipShape(RoundedRectangle(cornerRadius: 12))
+.overlay(
+    RoundedRectangle(cornerRadius: 12)
+        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+)</pre>
+      </div>
+
+      <div class="card" data-tags="disabled opacity conditional style button state">
+        <h3><span class="plain">Conditional disabling</span></h3>
+        <pre>Button("Submit") { submit() }
+    .disabled(email.isEmpty)
+    .opacity(email.isEmpty ? 0.5 : 1)</pre>
+      </div>
+
+      <div class="card" data-tags="safeareainset toolbar bottom bar keyboard avoid">
+        <h3><span class="plain">.safeAreaInset — sticky bottom bar</span></h3>
+        <pre>ScrollView { content }
+    .safeAreaInset(edge: .bottom) {
+        Button("Continue") { }.padding()
+    }</pre>
+      </div>
+
+      <div class="card" data-tags="redacted placeholder loading skeleton">
+        <h3><span class="plain">.redacted — skeleton loading state</span></h3>
+        <pre>Text(article.title)
+    .redacted(reason: isLoading ? .placeholder : [])</pre>
+      </div>
+    </section>
+
+    <!-- ============ NAVIGATION ============ -->
+    <section class="category" id="navigation">
+      <div class="category-head">
+        <h2>Navigation &amp; Presentation</h2>
+        <span class="sub">sheets, alerts, nav stacks, dismiss</span>
+      </div>
+
+      <div class="card" data-tags="navigationstack navigationlink push path programmatic">
+        <h3><span class="plain">NavigationStack (iOS 16+)</span></h3>
+        <pre>NavigationStack(path: $path) {
+    List(items) { item in
+        NavigationLink(item.name, value: item)
+    }
+    .navigationDestination(for: Item.self) { item in
+        DetailView(item: item)
+    }
+}
+<span class="cm">// programmatic push</span>
+path.append(newItem)</pre>
+      </div>
+
+      <div class="card" data-tags="sheet present modal bool item">
+        <h3><span class="plain">.sheet — bool vs item</span></h3>
+        <pre>.sheet(isPresented: $showSheet) { DetailView() }
+
+<span class="cm">// item-based — auto-unwraps, cleaner for optional data</span>
+.sheet(item: $selectedArticle) { article in
+    DetailView(article: article)
+}</pre>
+      </div>
+
+      <div class="card" data-tags="alert confirmationdialog error message">
+        <h3><span class="plain">.alert</span></h3>
+        <pre>.alert("Error", isPresented: $showError, presenting: errorMessage) { _ in
+    Button("OK", role: .cancel) { }
+} message: { message in
+    Text(message)
+}</pre>
+      </div>
+
+      <div class="card" data-tags="dismiss close sheet environment">
+        <h3><span class="plain">Dismissing a sheet from inside</span></h3>
+        <pre>@Environment(\.dismiss) var dismiss
+Button("Done") { dismiss() }</pre>
+      </div>
+
+      <div class="card" data-tags="tabview tab bar bottom navigation">
+        <h3><span class="plain">TabView</span></h3>
+        <pre>TabView {
+    HomeView()
+        .tabItem { Label("Home", systemImage: "house") }
+    ProfileView()
+        .tabItem { Label("Profile", systemImage: "person") }
+}</pre>
+      </div>
+    </section>
+
+    <!-- ============ LISTS & FORMS ============ -->
+    <section class="category" id="lists-forms">
+      <div class="category-head">
+        <h2>Lists &amp; Forms</h2>
+        <span class="sub">ForEach, swipe actions, pickers</span>
+      </div>
+
+      <div class="card" data-tags="foreach identifiable id list">
+        <h3><span class="plain">ForEach needs Identifiable</span></h3>
+        <pre>struct Article: Identifiable {
+    let id = UUID()
+    let title: String
+}
+List(articles) { article in Text(article.title) }
+<span class="cm">// no Identifiable? use: ForEach(articles, id: \.title)</span></pre>
+      </div>
+
+      <div class="card" data-tags="swipeactions delete edit list row">
+        <h3><span class="plain">.swipeActions</span></h3>
+        <pre>.swipeActions(edge: .trailing) {
+    Button(role: .destructive) { delete(item) } label: {
+        Label("Delete", systemImage: "trash")
+    }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="picker segmented dropdown form">
+        <h3><span class="plain">Picker styles</span></h3>
+        <pre>Picker("Category", selection: $selected) {
+    ForEach(categories, id: \.self) { Text($0) }
+}
+.pickerStyle(.segmented)  <span class="cm">// or .menu, .wheel</span></pre>
+      </div>
+
+      <div class="card" data-tags="form section textfield secure input">
+        <h3><span class="plain">Form + Section</span></h3>
+        <pre>Form {
+    Section("Account") {
+        TextField("Email", text: $email)
+        SecureField("Password", text: $password)
+    }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="binding custom get set optional unwrap">
+        <h3><span class="plain">Custom Binding (Binding get/set)</span></h3>
+        <p class="when">Use when you need to transform a value on the way in/out — e.g. binding a Double field to a String TextField.</p>
+        <pre>Binding<String>(
+    get: { String(amount) },
+    set: { amount = Double($0) ?? 0 }
+)</pre>
+      </div>
+    </section>
+
+    <!-- ============ LAYOUT ============ -->
+    <section class="category" id="layout">
+      <div class="category-head">
+        <h2>Layout Tools</h2>
+        <span class="sub">grids, geometry, spacing</span>
+      </div>
+
+      <div class="card" data-tags="lazyvgrid lazyhgrid grid columns">
+        <h3><span class="plain">LazyVGrid</span></h3>
+        <pre>let columns = [GridItem(.flexible()), GridItem(.flexible())]
+
+LazyVGrid(columns: columns, spacing: 12) {
+    ForEach(items) { item in CardView(item: item) }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="geometryreader size parent responsive">
+        <h3><span class="plain">GeometryReader</span></h3>
+        <p class="when">Use sparingly — it greedily fills available space. Good for reading parent size.</p>
+        <pre>GeometryReader { geo in
+    Rectangle().frame(width: geo.size.width * 0.5)
+}</pre>
+      </div>
+
+      <div class="card" data-tags="spacer zstack overlay align">
+        <h3><span class="plain">Spacer &amp; alignment</span></h3>
+        <pre>HStack {
+    Text("Left")
+    Spacer()
+    Text("Right")
+}
+ZStack(alignment: .bottomTrailing) { image; badge }</pre>
+      </div>
+    </section>
+
+    <!-- ============ ANIMATION & GESTURES ============ -->
+    <section class="category" id="animation-gesture">
+      <div class="category-head">
+        <h2>Animation &amp; Gestures</h2>
+        <span class="sub">withAnimation, transitions, taps and drags</span>
+      </div>
+
+      <div class="card" data-tags="withanimation animatable transition">
+        <h3><span class="plain">withAnimation</span></h3>
+        <pre>withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+    isExpanded.toggle()
+}</pre>
+      </div>
+
+      <div class="card" data-tags="transition insertion removal appear disappear">
+        <h3><span class="plain">.transition</span></h3>
+        <pre>if showCard {
+    CardView()
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+}</pre>
+      </div>
+
+      <div class="card" data-tags="gesture tap drag longpress">
+        <h3><span class="plain">Gestures</span></h3>
+        <pre>.gesture(
+    DragGesture()
+        .onChanged { value in offset = value.translation }
+        .onEnded { _ in withAnimation { offset = .zero } }
+)
+.onTapGesture { print("tapped") }
+.onLongPressGesture { print("long pressed") }</pre>
+      </div>
+    </section>
+
+    <!-- ============ DECISION TABLES ============ -->
+    <section class="category" id="decision-tables">
+      <div class="category-head">
+        <h2>Quick Decision Tables</h2>
+        <span class="sub">when in doubt, scan these</span>
+      </div>
+
+      <div class="card" data-tags="decision table property wrapper which one">
+        <h3><span class="plain">Property Wrapper — which one?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Wrapper</th></tr>
+          <tr><td>Simple value owned by this view</td><td>@State</td></tr>
+          <tr><td>Class instance created HERE</td><td>@StateObject</td></tr>
+          <tr><td>Class instance received from parent</td><td>@ObservedObject</td></tr>
+          <tr><td>Property inside ObservableObject that should update UI</td><td>@Published</td></tr>
+          <tr><td>Reading system value (colorScheme, dismiss)</td><td>@Environment</td></tr>
+          <tr><td>Shared object needed app-wide</td><td>@EnvironmentObject</td></tr>
+          <tr><td>Child needs to write back to parent's value</td><td>@Binding</td></tr>
+          <tr><td>Container/function returning multiple/conditional views</td><td>@ViewBuilder</td></tr>
+          <tr><td>Small persisted setting</td><td>@AppStorage</td></tr>
+          <tr><td>Track/control which field is focused</td><td>@FocusState</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table combine async which one network">
+        <h3><span class="plain">Combine vs async/await — which one?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Use</th></tr>
+          <tr><td>One-shot network fetch</td><td>async/await</td></tr>
+          <tr><td>Continuous stream (WebSocket, SSE)</td><td>Combine</td></tr>
+          <tr><td>Debounced search-as-you-type</td><td>Combine</td></tr>
+          <tr><td>Reacting to multiple @Published sources at once</td><td>Combine (.combineLatest)</td></tr>
+          <tr><td>Simple sequential async calls</td><td>async/await</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table sheet present when item bool">
+        <h3><span class="plain">Presenting a sheet — bool or item?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Use</th></tr>
+          <tr><td>Simple on/off, no associated data</td><td>.sheet(isPresented:)</td></tr>
+          <tr><td>Need to pass a specific optional object</td><td>.sheet(item:)</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table data passing scenario which pattern">
+        <h3><span class="plain">Passing data — which pattern?</span></h3>
+        <table class="decision">
+          <tr><th>Scenario</th><th>Pattern</th></tr>
+          <tr><td>Child reads parent data only</td><td>Plain let via init</td></tr>
+          <tr><td>Child writes back a simple value</td><td>@Binding</td></tr>
+          <tr><td>Child sends back a one-time result</td><td>Closure callback</td></tr>
+          <tr><td>Many views need the same live data</td><td>Shared ObservableObject</td></tr>
+          <tr><td>Global app state (auth, theme)</td><td>@EnvironmentObject</td></tr>
+          <tr><td>Unrelated screens, no shared parent</td><td>Singleton service or EnvironmentObject at root</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <div class="empty-state" id="emptyState">
+      <h3>Nothing matches</h3>
+      <p>Try a shorter term — "state", "sheet", "publisher", "binding"…</p>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const search = document.getElementById('search');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const sections = Array.from(document.querySelectorAll('section.category'));
+  const emptyState = document.getElementById('emptyState');
+  const searchCount = document.getElementById('searchCount');
+  const catLinks = Array.from(document.querySelectorAll('#catNav a'));
+
+  function highlightText(el, term){
+    // reset first
+    el.querySelectorAll('mark').forEach(m => {
+      m.replaceWith(document.createTextNode(m.textContent));
+    });
+  }
+
+  function filter(){
+    const term = search.value.trim().toLowerCase();
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const haystack = (card.dataset.tags + ' ' + card.textContent).toLowerCase();
+      const match = term === '' || haystack.includes(term);
+      card.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+
+    sections.forEach(sec => {
+      const anyVisible = Array.from(sec.querySelectorAll('.card')).some(c => c.style.display !== 'none');
+      sec.style.display = anyVisible ? '' : 'none';
+    });
+
+    emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+    searchCount.textContent = term === '' ? '' : `${visibleCount} match${visibleCount === 1 ? '' : 'es'}`;
+  }
+
+  search.addEventListener('input', filter);
+
+  // active category highlight on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        catLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`#catNav a[data-cat="${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(sec => observer.observe(sec));
+</script>
+
+</body>
+</html>
