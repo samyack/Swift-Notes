@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftUI Field Guide — Detailed</title>
+<style>
+  :root{
+    --bg: #F4F1EA;
+    --bg-panel: #FFFFFF;
+    --ink: #2B2622;
+    --ink-soft: #6B6259;
+    --line: #E4DDD1;
+    --accent: #C15F3C;
+    --accent-soft: #F1E0D6;
+    --code-bg: #2B2622;
+    --code-ink: #F4F1EA;
+    --code-accent: #E8A87C;
+    --confuse-bg: #FBEAEA;
+    --confuse-line: #E3B6B0;
+    --confuse-ink: #A34A3E;
+    --mono: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+    --serif: 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
+    --sans: -apple-system, 'Inter', 'Segoe UI', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  .shell{
+    display:grid;
+    grid-template-columns: 270px 1fr;
+    min-height:100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    position: sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    padding: 28px 20px;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .brand{ font-family: var(--serif); font-size: 21px; margin: 0 0 4px 2px; }
+  .brand span{ color: var(--accent); }
+  .tagline{ font-size: 12px; color: var(--ink-soft); margin: 0 0 22px 2px; }
+
+  .search-wrap{ position: relative; margin-bottom: 18px; }
+  #search{
+    width:100%; padding: 10px 12px 10px 34px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--bg-panel);
+    font-size: 13.5px; color: var(--ink); outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  #search:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .search-icon{ position:absolute; left:11px; top:50%; transform: translateY(-50%); width:14px; height:14px; opacity:.45; }
+  .search-count{ font-size: 11px; color: var(--ink-soft); margin: 6px 2px 14px; min-height: 14px; }
+
+  nav.categories a{
+    display:block; padding: 7px 10px; margin-bottom: 2px; border-radius: 6px;
+    color: var(--ink-soft); text-decoration:none; font-size: 13.5px;
+    transition: background .12s ease, color .12s ease;
+  }
+  nav.categories a:hover{ background: var(--accent-soft); color: var(--ink); }
+  nav.categories a.active{ background: var(--accent-soft); color: var(--accent); font-weight:600; }
+
+  .sidebar-footer{
+    margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--line);
+    font-size: 11px; color: var(--ink-soft);
+  }
+  .legend{ font-size:11px; color: var(--ink-soft); margin-top:16px; line-height:1.7; }
+  .legend .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+
+  /* ---------- Main ---------- */
+  main{ padding: 48px 56px 100px; max-width: 920px; }
+
+  .hero{ margin-bottom: 46px; }
+  .eyebrow{
+    font-size: 11.5px; letter-spacing: 1.4px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin: 0 0 10px;
+  }
+  h1.title{ font-family: var(--serif); font-size: 38px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.3px; }
+  .hero p{ font-size: 15px; color: var(--ink-soft); max-width: 600px; margin: 0; }
+
+  section.category{ margin-bottom: 60px; scroll-margin-top: 24px; }
+  .category-head{
+    display:flex; align-items: baseline; gap: 10px; margin-bottom: 20px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--line);
+  }
+  .category-head h2{ font-family: var(--serif); font-size: 25px; margin:0; }
+  .category-head .sub{ font-size: 12.5px; color: var(--ink-soft); }
+
+  .card{
+    background: var(--bg-panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 26px 28px; margin-bottom: 22px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{ border-color: #D8CBBB; box-shadow: 0 2px 14px rgba(43,38,34,0.05); }
+  .card h3{ margin: 0 0 6px; font-size: 18px; font-family: var(--mono); font-weight: 700; }
+  .card h3 .plain{ font-family: var(--sans); font-weight: 700; font-size: 17px; color: var(--ink); }
+
+  .card .lede{ font-size: 14.5px; color: var(--ink); margin: 4px 0 14px; }
+  .card .lede b{ color: var(--accent); }
+
+  .subhead{
+    font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+    color: var(--ink-soft); font-weight: 700; margin: 18px 0 8px;
+  }
+  .subhead:first-of-type{ margin-top: 4px; }
+
+  p.explain{ font-size: 14px; color: var(--ink); margin: 0 0 10px; }
+  p.explain b{ font-weight: 700; }
+  ul.explain-list{ margin: 0 0 10px; padding-left: 20px; font-size: 14px; }
+  ul.explain-list li{ margin-bottom: 6px; }
+  ul.explain-list b{ color: var(--ink); }
+
+  pre{
+    background: var(--code-bg); color: var(--code-ink); padding: 14px 16px;
+    border-radius: 8px; overflow-x: auto; font-family: var(--mono);
+    font-size: 12.8px; line-height: 1.6; margin: 6px 0 12px;
+  }
+  pre .cm{ color: #9A9188; }
+
+  .tip{
+    font-size: 13px; color: var(--ink-soft); background: var(--accent-soft);
+    border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-top: 10px;
+  }
+  .tip b{ color: var(--accent); }
+
+  .confuse{
+    font-size: 13px; color: var(--confuse-ink); background: var(--confuse-bg);
+    border-left: 3px solid var(--confuse-line); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-top: 10px;
+  }
+  .confuse b{ color: var(--confuse-ink); }
+  .confuse-title{ font-weight:700; display:block; margin-bottom:4px; }
+
+  table.compare{ width:100%; border-collapse: collapse; font-size: 13.5px; margin: 10px 0 14px; }
+  table.compare th{
+    text-align:left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px;
+    color: var(--ink-soft); padding: 9px 12px; border-bottom: 1px solid var(--line);
+    background: var(--accent-soft);
+  }
+  table.compare th:first-child{ border-radius: 6px 0 0 0; }
+  table.compare th:last-child{ border-radius: 0 6px 0 0; }
+  table.compare td{ padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.compare tr:last-child td{ border-bottom:none; }
+  table.compare td:first-child{ font-weight:600; color: var(--ink-soft); white-space:nowrap; }
+
+  table.decision{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
+  table.decision th{
+    text-align:left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px;
+    color: var(--ink-soft); padding: 8px 10px; border-bottom: 1px solid var(--line);
+  }
+  table.decision td{ padding: 10px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.decision td:first-child, table.decision th:first-child{
+    font-family: var(--mono); font-weight: 700; white-space: nowrap; color: var(--accent);
+  }
+  table.decision tr:last-child td{ border-bottom:none; }
+
+  .empty-state{ display:none; text-align:center; padding: 80px 20px; color: var(--ink-soft); }
+  .empty-state h3{ font-family: var(--serif); font-size: 20px; color: var(--ink); margin-bottom: 6px; }
+
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background: #D8CBBB; border-radius:8px; }
+
+  @media (max-width: 860px){
+    .shell{ grid-template-columns: 1fr; }
+    .sidebar{ position: static; height:auto; border-right:none; border-bottom:1px solid var(--line); }
+    main{ padding: 32px 20px 80px; }
+    h1.title{ font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <p class="brand">Swift<span>UI</span> Field Guide</p>
+    <p class="tagline">The detailed "why does this confuse me" edition</p>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search" type="text" placeholder="Search @State, sheet, publisher…" autocomplete="off">
+    </div>
+    <p class="search-count" id="searchCount"></p>
+
+    <nav class="categories" id="catNav">
+      <a href="#swift-fundamentals" data-cat="swift-fundamentals">Swift Fundamentals</a>
+      <a href="#protocols" data-cat="protocols">Protocols &amp; POP</a>
+      <a href="#memory" data-cat="memory">Memory Management (ARC)</a>
+      <a href="#common-protocols" data-cat="common-protocols">Common Protocols</a>
+      <a href="#property-wrappers" data-cat="property-wrappers">Property Wrappers</a>
+      <a href="#data-flow" data-cat="data-flow">Passing Data</a>
+      <a href="#combine-async" data-cat="combine-async">Combine &amp; Async</a>
+      <a href="#concurrency" data-cat="concurrency">Concurrency &amp; Actors</a>
+      <a href="#view-modifiers" data-cat="view-modifiers">View Modifiers</a>
+      <a href="#navigation" data-cat="navigation">Navigation &amp; Presentation</a>
+      <a href="#lists-forms" data-cat="lists-forms">Lists &amp; Forms</a>
+      <a href="#layout" data-cat="layout">Layout Tools</a>
+      <a href="#animation-gesture" data-cat="animation-gesture">Animation &amp; Gestures</a>
+      <a href="#architecture" data-cat="architecture">Architecture Patterns</a>
+      <a href="#decision-tables" data-cat="decision-tables">Quick Decision Tables</a>
+    </nav>
+
+    <div class="legend">
+      <div><span class="dot" style="background:var(--accent)"></span>Tip = good habit</div>
+      <div><span class="dot" style="background:var(--confuse-ink)"></span>Red = common confusion / bug</div>
+    </div>
+
+    <div class="sidebar-footer">
+      Search filters every card's full text, not just titles — type "thread", "crash", "reset" etc. to find gotchas.
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+    <div class="hero">
+      <p class="eyebrow">Beginner → Intermediate, in depth</p>
+      <h1 class="title">SwiftUI, explained the way you'd<br>explain it to a confused friend.</h1>
+      <p>Every entry here answers three things: what it actually is in plain terms, when to reach for it, and exactly where iOS devs trip on it.</p>
+    </div>
+
+    <!-- ============ SWIFT FUNDAMENTALS ============ -->
+    <section class="category" id="swift-fundamentals">
+      <div class="category-head">
+        <h2>Swift Language Fundamentals</h2>
+        <span class="sub">the core language concepts everything else is built on</span>
+      </div>
+
+      <div class="card" data-tags="struct class value type reference type difference confusion">
+        <h3><span class="plain">Struct vs Class</span></h3>
+        <p class="lede">The single most important distinction in Swift. Get this wrong and weird bugs show up everywhere, especially in SwiftUI.</p>
+        <p class="subhead">In simple terms</p>
+        <p class="explain">A <b>struct is a value type</b> — when you assign it or pass it somewhere, Swift makes a full independent copy. Changing the copy never affects the original. A <b>class is a reference type</b> — when you assign it or pass it somewhere, you're just handing out another pointer to the SAME object in memory. Changing it through any reference changes it everywhere.</p>
+        <table class="compare">
+          <tr><th></th><th>struct</th><th>class</th></tr>
+          <tr><td>Copy behavior</td><td>Copied on assignment (independent)</td><td>Shared reference (same instance)</td></tr>
+          <tr><td>Inheritance</td><td>No</td><td>Yes</td></tr>
+          <tr><td>Identity (===)</td><td>N/A</td><td>Can check if same instance</td></tr>
+          <tr><td>Used for</td><td>Models, data, SwiftUI Views</td><td>ViewModels, shared/mutable state, ObservableObject</td></tr>
+          <tr><td>Deinit</td><td>No</td><td>Yes (deinit {})</td></tr>
+        </table>
+        <pre>struct Point { var x = 0, y = 0 }
+var a = Point(x: 1, y: 1)
+var b = a          <span class="cm">// COPY — b is independent</span>
+b.x = 99
+<span class="cm">// a.x is still 1</span>
+
+class Counter { var value = 0 }
+let c1 = Counter()
+let c2 = c1        <span class="cm">// SAME OBJECT — just another reference</span>
+c2.value = 99
+<span class="cm">// c1.value is now ALSO 99</span></pre>
+        <div class="confuse">
+          <span class="confuse-title">"Why is SwiftUI's View a struct but my ViewModel a class?"</span>
+          Views are recreated constantly and should be cheap, disposable, and predictable — value semantics are perfect for that. ViewModels need to be a single shared source of truth that many views observe and mutate over time — reference semantics (class + ObservableObject) are required for that.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"I mutated a struct property but got a compiler error"</span>
+          Struct instance methods that modify properties must be marked <code>mutating func</code>, and the variable holding the struct must be declared with <code>var</code>, not <code>let</code>.
+        </div>
+      </div>
+
+      <div class="card" data-tags="optional nil optional binding if let guard let nil coalescing chaining force unwrap crash">
+        <h3><span class="plain">Optionals</span></h3>
+        <p class="lede">Swift's way of forcing you to explicitly handle "this value might not exist" instead of silently crashing like null pointers in other languages (until you force-unwrap incorrectly, which brings the crash right back).</p>
+        <pre><span class="cm">// Declaring</span>
+var name: String? = nil
+
+<span class="cm">// Safe unwrap #1 — if let</span>
+if let name = name {
+    print(name)   <span class="cm">// only runs if name has a value</span>
+}
+
+<span class="cm">// Safe unwrap #2 — guard let (exits early if nil)</span>
+func greet(name: String?) {
+    guard let name = name else { return }
+    print("Hello \(name)")
+}
+
+<span class="cm">// Nil-coalescing — provide a default</span>
+let displayName = name ?? "Guest"
+
+<span class="cm">// Optional chaining — safely reach into a chain that might be nil</span>
+let uppercased = name?.uppercased()
+
+<span class="cm">// Force unwrap — DANGEROUS, crashes if nil</span>
+let forced = name!</pre>
+        <div class="confuse">
+          <span class="confuse-title">"Unexpectedly found nil while unwrapping an Optional" crash</span>
+          This means you force-unwrapped (<code>!</code>) something that turned out to be nil at runtime. Avoid <code>!</code> in real app code except when you are 100% certain by construction (e.g. a just-created array's first element). Prefer <code>if let</code>, <code>guard let</code>, or <code>??</code> everywhere else.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"if let name = name — isn't that weird, same name twice?"</span>
+          This is called shadowing — it's intentional and the modern preferred style (Swift 5.7+ even lets you just write <code>if let name</code>, dropping the second half). The unwrapped constant only exists inside the if block.
+        </div>
+      </div>
+
+      <div class="card" data-tags="closures syntax capture escaping trailing closure function type">
+        <h3><span class="plain">Closures</span></h3>
+        <p class="lede">A closure is a self-contained block of code you can pass around, like a function without a name — SwiftUI's entire button/gesture/completion-handler API is built on these.</p>
+        <pre><span class="cm">// Full syntax</span>
+let greet: (String) -> Void = { name in
+    print("Hello, \(name)")
+}
+
+<span class="cm">// Trailing closure syntax — used constantly in SwiftUI</span>
+Button("Tap me") {
+    print("tapped")     <span class="cm">// this whole block IS a closure</span>
+}
+
+<span class="cm">// A function that TAKES a closure as a parameter</span>
+func fetchData(completion: @escaping (String) -> Void) {
+    <span class="cm">// completion(...) called later, after this function has returned</span>
+}</pre>
+        <p class="subhead">@escaping — the part that confuses everyone</p>
+        <p class="explain">Normally a closure passed into a function is used and discarded before the function returns (non-escaping, the default). If the closure needs to be <b>stored and called later</b> — after the function has already returned, like a network completion handler — Swift requires you to mark the parameter <b>@escaping</b>, because it "escapes" the function's normal lifetime.</p>
+        <div class="confuse">
+          <span class="confuse-title">"Escaping closure captures 'self' explicitly" warning</span>
+          Because @escaping closures can run long after the function returns, Swift wants you to be explicit that you understand you're capturing <code>self</code>, since it can create a retain cycle. Use <code>[weak self]</code> in the closure's capture list, then <code>self?.property</code> inside.
+        </div>
+      </div>
+
+      <div class="card" data-tags="error handling try catch throws result type do catch">
+        <h3><span class="plain">Error Handling — try / catch / throws / Result</span></h3>
+        <p class="explain">Functions that can fail are marked <code>throws</code>. You call them with <code>try</code>, wrapped in a <code>do/catch</code> block.</p>
+        <pre>enum NetworkError: Error {
+    case badURL, noData
+}
+
+func fetchUser() throws -> User {
+    guard let url = URL(string: "...") else { throw NetworkError.badURL }
+    <span class="cm">// ...</span>
+}
+
+do {
+    let user = try fetchUser()
+} catch NetworkError.badURL {
+    print("Bad URL")
+} catch {
+    print("Something else: \(error)")
+}
+
+<span class="cm">// try? turns the result into an Optional, swallowing the error</span>
+let user = try? fetchUser()
+
+<span class="cm">// try! force-runs it, crashes on failure — avoid in real code</span></pre>
+        <p class="explain">The <b>Result</b> type is an alternative that carries success/failure as a value (useful in completion-handler-based APIs, pre-async/await):</p>
+        <pre>func fetchUser(completion: @escaping (Result<User, Error>) -> Void) { }
+
+fetchUser { result in
+    switch result {
+    case .success(let user): print(user)
+    case .failure(let error): print(error)
+    }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="enum associated values switch pattern matching">
+        <h3><span class="plain">Enums with Associated Values</span></h3>
+        <p class="explain">Swift enums can carry extra data per case — extremely useful for representing UI/network state cleanly (this pattern shows up constantly in real apps).</p>
+        <pre>enum LoadState {
+    case idle
+    case loading
+    case loaded([Article])
+    case failed(String)
+}
+
+switch loadState {
+case .idle: EmptyView()
+case .loading: ProgressView()
+case .loaded(let articles): List(articles) { ... }
+case .failed(let message): Text(message)
+}</pre>
+        <div class="tip">This is often cleaner than juggling separate <code>isLoading</code>, <code>errorMessage</code>, and <code>articles</code> properties that could get out of sync with each other.</div>
+      </div>
+
+      <div class="card" data-tags="property observers didset willset computed property get set">
+        <h3><span class="plain">Computed Properties &amp; Property Observers</span></h3>
+        <pre><span class="cm">// Computed property — calculated on access, not stored</span>
+var fullName: String {
+    get { "\(firstName) \(lastName)" }
+}
+
+<span class="cm">// Property observer — react to changes</span>
+var score = 0 {
+    willSet { print("about to become \(newValue)") }
+    didSet { print("changed from \(oldValue) to \(score)") }
+}</pre>
+        <div class="confuse"><span class="confuse-title">"didSet fires even though I set the same value"</span>By default, didSet fires any time you assign to the property, even if the new value equals the old one — add an <code>if oldValue != score</code> guard inside didSet if you need to skip no-op changes.</div>
+      </div>
+
+      <div class="card" data-tags="extensions extend type add functionality">
+        <h3><span class="plain">Extensions</span></h3>
+        <p class="explain">Add new functionality to an existing type — even types you don't own, like String or Int — without subclassing.</p>
+        <pre>extension String {
+    var isValidEmail: Bool {
+        contains("@") && contains(".")
+    }
+}
+"test@mail.com".isValidEmail   <span class="cm">// true</span></pre>
+        <p class="explain">Also commonly used to organize a large SwiftUI View's code into logical pieces, or to add protocol conformance separately from the main type definition.</p>
+      </div>
+
+      <div class="card" data-tags="generics type parameter reusable code">
+        <h3><span class="plain">Generics</span></h3>
+        <p class="explain">Write one function/type that works with ANY type, while staying fully type-safe (no casting needed).</p>
+        <pre>func firstItem<T>(in array: [T]) -> T? {
+    array.first
+}
+firstItem(in: [1, 2, 3])          <span class="cm">// Int?</span>
+firstItem(in: ["a", "b"])         <span class="cm">// String?</span>
+
+<span class="cm">// Your CardContainer<Content: View> from @ViewBuilder is generic too —</span>
+<span class="cm">// it works with ANY view type passed as Content.</span></pre>
+      </div>
+
+      <div class="card" data-tags="access control private fileprivate internal public">
+        <h3><span class="plain">Access Control</span></h3>
+        <table class="decision">
+          <tr><th>Level</th><th>Visible from</th></tr>
+          <tr><td>private</td><td>Same file/type only (private(set) allows read elsewhere, write only here)</td></tr>
+          <tr><td>fileprivate</td><td>Anywhere in the same file</td></tr>
+          <tr><td>internal (default)</td><td>Anywhere in the same module/app target</td></tr>
+          <tr><td>public</td><td>Outside the module too (frameworks/packages)</td></tr>
+        </table>
+        <div class="tip">Common pattern in ViewModels: <code>@Published private(set) var articles: [Article] = []</code> — the View can read it, but only the ViewModel itself can change it.</div>
+      </div>
+    </section>
+
+    <!-- ============ PROTOCOLS & POP ============ -->
+    <section class="category" id="protocols">
+      <div class="category-head">
+        <h2>Protocols &amp; Protocol-Oriented Programming</h2>
+        <span class="sub">the "contract" concept behind almost every Swift/SwiftUI API</span>
+      </div>
+
+      <div class="card" data-tags="protocol what is it contract blueprint">
+        <h3><span class="plain">What a protocol actually is</span></h3>
+        <p class="lede">A protocol is a <b>blueprint of requirements</b> — a list of properties and methods a type promises to implement, with no implementation of its own.</p>
+        <p class="explain">Think of it as a job description: "whoever takes this job (conforms to this protocol) must be able to do X, Y, Z." The type that conforms provides the actual implementation.</p>
+        <pre>protocol Vehicle {
+    var wheelCount: Int { get }
+    func drive()
+}
+
+struct Car: Vehicle {
+    var wheelCount = 4
+    func drive() { print("Vrooom") }
+}
+
+struct Bike: Vehicle {
+    var wheelCount = 2
+    func drive() { print("Pedaling") }
+}
+
+func startJourney(with vehicle: Vehicle) {
+    vehicle.drive()   <span class="cm">// works for ANY Vehicle — Car, Bike, anything future</span>
+}</pre>
+        <div class="tip">SwiftUI's <code>View</code> is itself a protocol — every struct that has a <code>body</code> returning <code>some View</code> is conforming to the View protocol. That's why you write <code>: View</code> after every SwiftUI view struct.</div>
+      </div>
+
+      <div class="card" data-tags="protocol extension default implementation">
+        <h3><span class="plain">Protocol Extensions — default implementations</span></h3>
+        <p class="explain">You can give a protocol a default implementation via an extension, so conforming types get it for free unless they choose to override it.</p>
+        <pre>protocol Greetable {
+    var name: String { get }
+    func greet()
+}
+
+extension Greetable {
+    func greet() {   <span class="cm">// default implementation</span>
+        print("Hello, \(name)!")
+    }
+}
+
+struct User: Greetable {
+    var name: String
+    <span class="cm">// doesn't need to write greet() — gets it free from the extension</span>
+}</pre>
+        <p class="explain">This is the core of <b>Protocol-Oriented Programming (POP)</b> — Apple's preferred alternative to class inheritance. Instead of building a rigid inheritance tree, you compose behavior by conforming to several small protocols, each contributing its own default behavior.</p>
+      </div>
+
+      <div class="card" data-tags="delegate pattern protocol callback uikit">
+        <h3><span class="plain">The Delegate Pattern</span></h3>
+        <p class="explain">A very common protocol use-case (more UIKit-era, but still shows up, especially bridging UIKit into SwiftUI): one object defines a protocol describing events it can report, and hands off ("delegates") responsibility for handling those events to another object.</p>
+        <pre>protocol DownloadDelegate: AnyObject {
+    func downloadDidFinish(data: Data)
+    func downloadDidFail(error: Error)
+}
+
+class Downloader {
+    weak var delegate: DownloadDelegate?   <span class="cm">// weak avoids retain cycle</span>
+    func start() {
+        <span class="cm">// ...when done:</span>
+        delegate?.downloadDidFinish(data: someData)
+    }
+}</pre>
+        <div class="tip">In modern SwiftUI code, closures or Combine/@Published are usually preferred over delegates — but you'll still meet this pattern constantly when bridging UIKit components (e.g. wrapping a UIViewController with UIViewControllerRepresentable).</div>
+      </div>
+
+      <div class="card" data-tags="associatedtype protocol generic placeholder">
+        <h3><span class="plain">associatedtype — protocols with a generic placeholder</span></h3>
+        <p class="explain">Lets a protocol describe a requirement without committing to a concrete type — the conforming type fills in the blank. This is exactly why SwiftUI's <code>View</code> protocol can require a <code>body</code> property without knowing in advance what concrete view type each screen will return.</p>
+        <pre>protocol Container {
+    associatedtype Item
+    var items: [Item] { get set }
+    mutating func add(_ item: Item)
+}
+
+struct IntStack: Container {
+    var items: [Int] = []
+    mutating func add(_ item: Int) { items.append(item) }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="protocol confusion when to use class inheritance vs protocol">
+        <h3><span class="plain">When to reach for a protocol vs a base class</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Use</th></tr>
+          <tr><td>Multiple unrelated types need to share ONE behavior</td><td>Protocol (+ extension for default impl)</td></tr>
+          <tr><td>Need to swap real implementation for a fake/mock in tests</td><td>Protocol (define a ServiceProtocol, inject real or mock)</td></tr>
+          <tr><td>Types are fundamentally "the same kind of thing" sharing storage/state</td><td>Class inheritance (rare in modern SwiftUI code)</td></tr>
+          <tr><td>Struct wants to conform to something without inheritance (structs can't inherit anyway)</td><td>Protocol — the only option</td></tr>
+        </table>
+        <div class="confuse"><span class="confuse-title">"My protocol-typed array won't let me use it as Identifiable/Hashable directly"</span>Protocols with associated types (like Identifiable in some generic contexts) can't always be used as a plain existential type without extra work. This is an advanced edge case — if you hit "protocol can only be used as a generic constraint" errors, it usually means you need generics instead of a plain protocol-typed variable.</div>
+      </div>
+    </section>
+
+    <!-- ============ MEMORY MANAGEMENT ============ -->
+    <section class="category" id="memory">
+      <div class="category-head">
+        <h2>Memory Management (ARC)</h2>
+        <span class="sub">retain cycles, weak, unowned — the silent-crash-and-leak category</span>
+      </div>
+
+      <div class="card" data-tags="arc automatic reference counting retain cycle memory leak">
+        <h3><span class="plain">ARC in plain terms</span></h3>
+        <p class="explain">Swift automatically keeps a count of how many things are pointing at each class instance. When that count hits zero, the object is deallocated. This only applies to <b>classes</b> (reference types) — structs don't need this because they're copied, not shared.</p>
+        <p class="explain">A <b>retain cycle</b> happens when two objects hold strong references to each other — object A keeps B alive, B keeps A alive, so neither's count ever reaches zero, and both leak memory forever, even if nothing else in your app references them.</p>
+      </div>
+
+      <div class="card" data-tags="weak unowned strong reference closure self retain cycle">
+        <h3><span class="plain">strong vs weak vs unowned</span></h3>
+        <table class="compare">
+          <tr><th></th><th>strong (default)</th><th>weak</th><th>unowned</th></tr>
+          <tr><td>Keeps object alive?</td><td>Yes</td><td>No</td><td>No</td></tr>
+          <tr><td>Can become nil?</td><td>N/A</td><td>Yes — must be Optional (var x: T?)</td><td>No — crashes if accessed after deallocation</td></tr>
+          <tr><td>Use when</td><td>Normal ownership (default, most properties)</td><td>The referenced object might be deallocated first (most common, safest default for closures)</td><td>You're CERTAIN the reference outlives this one (rarer, riskier)</td></tr>
+        </table>
+        <pre><span class="cm">// Classic retain cycle — Downloader keeps delegate alive, delegate keeps Downloader alive</span>
+class Downloader {
+    var delegate: DownloadDelegate?   <span class="cm">// strong — BAD, causes a cycle if delegate points back</span>
+}
+
+<span class="cm">// Fixed:</span>
+class Downloader {
+    weak var delegate: DownloadDelegate?   <span class="cm">// weak — breaks the cycle</span>
+}
+
+<span class="cm">// The #1 place you'll actually use this — inside closures:</span>
+service.fetchData { [weak self] result in
+    self?.articles = result   <span class="cm">// self is Optional here, safely handled with ?</span>
+}</pre>
+        <div class="confuse">
+          <span class="confuse-title">"My ViewModel/screen never gets deallocated (memory grows over time)"</span>
+          Classic cause: a closure captures <code>self</code> strongly (no <code>[weak self]</code>), and that closure is stored somewhere long-lived (like a Combine <code>.sink</code> stored in cancellables, or a completion handler kept for later). Add <code>[weak self]</code> to any closure that outlives the immediate function call, especially inside ViewModels holding network/Combine subscriptions.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"Why not just use unowned everywhere instead of weak?"</span>
+          unowned assumes the reference will NEVER be accessed after the other object is gone — if that assumption is wrong, your app crashes instead of gracefully doing nothing. weak is the safer default; only reach for unowned when you can prove the lifetime relationship (e.g. a child that can never outlive its parent).
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMMON PROTOCOLS ============ -->
+    <section class="category" id="common-protocols">
+      <div class="category-head">
+        <h2>Common Built-in Protocols</h2>
+        <span class="sub">Identifiable, Equatable, Hashable, Codable, Comparable — you'll conform to these constantly</span>
+      </div>
+
+      <div class="card" data-tags="identifiable id foreach list requirement">
+        <h3><span class="plain">Identifiable</span></h3>
+        <p class="explain">Requires a stable <code>id</code> property. SwiftUI's <code>List</code> and <code>ForEach</code> use it to track which row is which across updates/animations.</p>
+        <pre>struct Article: Identifiable {
+    let id = UUID()
+    let title: String
+}</pre>
+      </div>
+
+      <div class="card" data-tags="codable encodable decodable json parsing network model">
+        <h3><span class="plain">Codable (Encodable + Decodable)</span></h3>
+        <p class="explain">Lets Swift automatically convert your struct to/from JSON — this is what powers <code>.decode(type:decoder:)</code> in your Combine networking pipeline, and <code>JSONDecoder().decode(...)</code> in async/await code.</p>
+        <pre>struct NewsResponse: Codable {
+    let articles: [Article]
+}
+struct Article: Codable, Identifiable {
+    let id: UUID
+    let title: String
+    let publishedAt: Date
+}
+
+<span class="cm">// Mismatched key names? use CodingKeys</span>
+struct Article: Codable {
+    let title: String
+    let publishedAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case publishedAt = "published_at"
+    }
+}</pre>
+        <div class="confuse"><span class="confuse-title">"decoding failed / keyNotFound error"</span>Almost always a mismatch between your struct's property names/types and the actual JSON keys/types. Print the raw JSON string and compare field-by-field, or add CodingKeys to map differently-named JSON fields.</div>
+      </div>
+
+      <div class="card" data-tags="equatable hashable comparable protocol synthesized">
+        <h3><span class="plain">Equatable, Hashable, Comparable</span></h3>
+        <table class="decision">
+          <tr><th>Protocol</th><th>Gives you</th></tr>
+          <tr><td>Equatable</td><td><code>==</code> comparison between two instances</td></tr>
+          <tr><td>Hashable</td><td>Can be used in a Set, or as a Dictionary key</td></tr>
+          <tr><td>Comparable</td><td><code>&lt;</code>, <code>&gt;</code> — lets you .sort() an array of them</td></tr>
+        </table>
+        <pre>struct Article: Equatable, Hashable {
+    let id: UUID
+    let title: String
+}
+<span class="cm">// Swift auto-generates == and hash(into:) for you IF every stored property is itself Equatable/Hashable — no manual code needed</span></pre>
+        <div class="tip">SwiftUI's <code>.onChange(of:)</code> and <code>.animation(value:)</code> require the value to be Equatable — this is a common reason you're asked to conform to it.</div>
+      </div>
+    </section>
+
+    <!-- ============ PROPERTY WRAPPERS ============ -->
+    <section class="category" id="property-wrappers">
+      <div class="category-head">
+        <h2>Property Wrappers</h2>
+        <span class="sub">who owns the data, and who's just borrowing it</span>
+      </div>
+
+      <!-- @State -->
+      <div class="card" data-tags="state simple value type owner struct">
+        <h3>@State</h3>
+        <p class="lede">A private, small storage box <b>that lives inside one view</b> and survives that view being rebuilt over and over.</p>
+
+        <p class="subhead">In simple terms</p>
+        <p class="explain">SwiftUI redraws your view's <code>body</code> constantly — every tap, every animation frame, it can re-run the whole struct's initializer. Normally that would reset every variable back to its default value each time. <b>@State is SwiftUI's way of saying "remember this value outside the struct's own memory, so it survives those rebuilds."</b> Think of the View struct as a disposable paper form that gets thrown away and reprinted every time something changes — @State is a filing cabinet SwiftUI keeps separately, so the same value shows up on the new form.</p>
+
+        <p class="subhead">When to use</p>
+        <ul class="explain-list">
+          <li><b>Value types only</b>: Int, String, Bool, Double, structs, enums, arrays/dictionaries of these.</li>
+          <li>The data belongs to <b>this view alone</b> — a toggle, a text field's current text, whether a sheet is showing, a loading flag.</li>
+          <li>Never for class instances that other views also need to observe — that's @StateObject's job.</li>
+        </ul>
+
+        <pre>@State private var count = 0
+@State private var isShowingSheet = false
+@State private var searchText = ""</pre>
+
+        <p class="subhead">Where devs get confused</p>
+        <div class="confuse">
+          <span class="confuse-title">"I set @State in init() and it didn't stick"</span>
+          Setting a @State var from inside a custom <code>init</code> doesn't work the way you'd expect, because @State's storage isn't fully wired up until the view is actually inserted into the hierarchy. If you need to seed a @State value from a parameter, use <code>_property = State(initialValue: ...)</code> inside init, or better — reconsider whether it should be @State at all.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"Why does it reset when I navigate back?"</span>
+          If the parent view creates a fresh instance of the child (e.g. it's inside a List row and the list re-renders, or it's behind an if/else branch that momentarily disappears), a brand-new @State storage box is created too — the old value is gone. @State survives the view's own re-renders, not the view being removed and re-added.
+        </div>
+        <p class="explain">Always mark @State <b>private</b> — it should only ever be set from inside the same view. If a child needs to change it, pass a <code>$binding</code> instead of making the property non-private.</p>
+      </div>
+
+      <!-- @StateObject vs @ObservedObject -->
+      <div class="card" data-tags="stateobject observedobject observableobject owns lifecycle viewmodel confusion difference">
+        <h3>@StateObject <span class="plain">vs</span> @ObservedObject</h3>
+        <p class="lede">This is the <b>single most confused pair</b> in SwiftUI. Both work with reference types (classes) conforming to <code>ObservableObject</code>. The entire difference is about <b>who is responsible for creating and keeping the object alive</b>.</p>
+
+        <p class="subhead">In simple terms</p>
+        <p class="explain">Imagine a ViewModel class as a <b>whiteboard**</b> that several views can look at. Someone has to be the one who buys the whiteboard and owns it — everyone else just walks up and reads/writes on it. <b>@StateObject is "I am buying this whiteboard, it's mine, I keep it even if my own view redraws."</b> <b>@ObservedObject is "someone handed me a whiteboard, I'll use it, but I am not responsible for its lifetime."</b></p>
+
+        <p class="explain">The reason this trips people up: both look and behave almost identically day-to-day (both refresh the view when a <code>@Published</code> property changes). The difference only becomes visible in one specific situation — when <b>the view itself gets recreated</b> by its parent.</p>
+
+        <table class="compare">
+          <tr><th></th><th>@StateObject</th><th>@ObservedObject</th></tr>
+          <tr><td>Who creates the object</td><td>This view — you write <code>= SomeClass()</code></td><td>Someone else (parent) passes it in</td></tr>
+          <tr><td>Survives THIS view's body re-render</td><td>Yes</td><td>Yes</td></tr>
+          <tr><td>Survives the PARENT recreating this view</td><td>Yes — SwiftUI protects it</td><td><b>No</b> — a fresh object is created and all state is lost</td></tr>
+          <tr><td>Correct location</td><td>Top of a feature / screen that owns the ViewModel</td><td>Child views further down that just receive it</td></tr>
+        </table>
+
+        <pre><span class="cm">// ViewModel</span>
+class NewsViewModel: ObservableObject {
+    @Published var articles: [Article] = []
+    @Published var isLoading = false
+}
+
+<span class="cm">// Parent — OWNS the view model → StateObject</span>
+struct NewsListView: View {
+    @StateObject private var viewModel = NewsViewModel()
+
+    var body: some View {
+        List(viewModel.articles) { article in
+            <span class="cm">// pass the SAME instance down → child uses @ObservedObject</span>
+            NewsRowView(viewModel: viewModel)
+        }
+    }
+}
+
+<span class="cm">// Child — RECEIVES the view model → ObservedObject</span>
+struct NewsRowView: View {
+    @ObservedObject var viewModel: NewsViewModel
+}</pre>
+
+        <p class="subhead">Where devs get confused</p>
+        <div class="confuse">
+          <span class="confuse-title">"My data randomly resets for no reason"</span>
+          Classic cause: you wrote <code>@ObservedObject var viewModel = MyViewModel()</code> at the top of a view (e.g. inside a NavigationLink destination, or a view that's inside a parent's conditional/List). Every time the parent re-renders, SwiftUI re-creates that view struct, which re-runs <code>= MyViewModel()</code> again — brand new object, all your @Published values reset to defaults. The fix is always the same: if you wrote <code>= ClassName()</code>, it must be @StateObject, never @ObservedObject.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"Can I just make everything @StateObject to be safe?"</span>
+          No — if you mark a property @StateObject in a child view that's supposed to receive an existing object from its parent, SwiftUI will actually create a brand-new, disconnected instance rather than using the one you tried to pass in — silently breaking the shared state. The rule is mechanical, not a matter of caution: created here → StateObject. Received as a parameter → ObservedObject.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"Where's the actual 'source of truth' view model created?"</span>
+          Usually one level above where it's first needed — often the screen-level view, or even higher in the App struct with <code>.environmentObject()</code> if many unrelated screens need it (see @EnvironmentObject below).
+        </div>
+      </div>
+
+      <!-- @Published -->
+      <div class="card" data-tags="published observableobject class notify update ui">
+        <h3>@Published</h3>
+        <p class="lede">Marks a property <b>inside an ObservableObject class</b> so that whenever it changes, every view observing that object (via @StateObject/@ObservedObject/@EnvironmentObject) automatically re-renders.</p>
+
+        <p class="subhead">In simple terms</p>
+        <p class="explain">An <code>ObservableObject</code> by itself does nothing — it's just a class. @Published is what actually broadcasts "hey, I changed" to SwiftUI. Without @Published on a property, changing it will NOT update the UI, even though the class conforms to ObservableObject.</p>
+
+        <pre>class AuthViewModel: ObservableObject {
+    @Published var isLoggedIn = false
+    @Published var user: User?
+    @Published var errorMessage: String?
+    var internalCache: [String: Any] = [:]   <span class="cm">// NOT published — UI doesn't care about this</span>
+}</pre>
+
+        <p class="subhead">Where devs get confused</p>
+        <div class="confuse">
+          <span class="confuse-title">"I changed a property but the UI didn't update"</span>
+          Almost always means you forgot @Published on that specific property, or you mutated a nested object's property instead of reassigning the whole array/struct (e.g. mutating one property deep inside an array element sometimes doesn't trigger it the way reassigning the array does).
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"Should EVERY property be @Published?"</span>
+          No — only ones the UI actually reads. Marking internal bookkeeping properties (like a private cache or a raw network response you've already parsed) as @Published causes extra, wasted view re-renders.
+        </div>
+      </div>
+
+      <!-- @Environment vs @EnvironmentObject -->
+      <div class="card" data-tags="environment environmentobject system value colorscheme dismiss global shared app wide session confusion">
+        <h3>@Environment <span class="plain">vs</span> @EnvironmentObject</h3>
+        <p class="lede">Different tools that sound similar and get mixed up constantly. One reads small <b>system-provided values</b>. The other injects a <b>whole custom object</b> to an entire screen tree.</p>
+
+        <table class="compare">
+          <tr><th></th><th>@Environment</th><th>@EnvironmentObject</th></tr>
+          <tr><td>What it carries</td><td>A single system value (color scheme, dismiss action, locale, etc.) or a custom EnvironmentKey</td><td>A whole custom class instance (your ViewModel/session/settings object)</td></tr>
+          <tr><td>Where it comes from</td><td>Built into SwiftUI, or a key you define yourself</td><td>Something YOU injected higher up with <code>.environmentObject()</code></td></tr>
+          <tr><td>Crashes if missing?</td><td>No — has a default value</td><td><b>Yes</b> — app crashes at runtime if never injected</td></tr>
+        </table>
+
+        <pre><span class="cm">// @Environment — small built-in values</span>
+@Environment(\.colorScheme) var colorScheme
+@Environment(\.dismiss) var dismiss
+Button("Close") { dismiss() }
+
+<span class="cm">// @EnvironmentObject — a shared object, injected once</span>
+<span class="cm">// App entry point</span>
+@main
+struct MyApp: App {
+    @StateObject var session = SessionManager()
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(session)   <span class="cm">// injected once, available to ALL children</span>
+        }
+    }
+}
+
+<span class="cm">// Any child, no matter how deep</span>
+struct ProfileView: View {
+    @EnvironmentObject var session: SessionManager
+}</pre>
+
+        <p class="subhead">When to use @EnvironmentObject vs passing @ObservedObject manually</p>
+        <ul class="explain-list">
+          <li>Use <b>@EnvironmentObject</b> for truly app-wide/global state needed by many unrelated views — auth session, theme, user settings.</li>
+          <li>Use <b>@ObservedObject</b> passed explicitly through init when only a specific parent → child chain needs it — keeps data flow traceable and easier to test.</li>
+        </ul>
+
+        <p class="subhead">Where devs get confused</p>
+        <div class="confuse">
+          <span class="confuse-title">"Fatal error: No ObservableObject of type X found"</span>
+          This crash means some view declared <code>@EnvironmentObject var x: X</code> but nothing above it in the view hierarchy ever called <code>.environmentObject(x)</code>. Common cause: you injected it in the main App scene, but you're previewing a subview in Xcode Previews directly — Previews don't automatically get the App's environment, so you must add <code>.environmentObject(PreviewSessionManager())</code> to the Preview itself too.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"I injected it but a sibling screen doesn't see it"</span>
+          .environmentObject() only flows <b>downward</b> to that view's children — it must be attached at or above every consumer in the tree, not on a sibling branch.
+        </div>
+      </div>
+
+      <!-- @Binding -->
+      <div class="card" data-tags="binding two way child parent modify write back">
+        <h3>@Binding</h3>
+        <p class="lede">Creates a <b>two-way pipe</b> so a child view can both read AND write a value that's actually owned by a parent (or by a class).</p>
+
+        <p class="subhead">In simple terms</p>
+        <p class="explain">A regular parameter passed to a child view is a one-way copy for value types — if the child changes it, the parent never finds out. @Binding fixes that: rather than passing the value itself, the parent passes a "remote control" (the <code>$</code>-prefixed binding) that reads and writes the parent's actual @State storage.</p>
+
+        <pre>struct ParentView: View {
+    @State private var name = ""
+    var body: some View {
+        ChildTextField(name: $name)   <span class="cm">// $ creates the Binding</span>
+    }
+}
+
+struct ChildTextField: View {
+    @Binding var name: String
+    var body: some View {
+        TextField("Name", text: $name)
+    }
+}</pre>
+
+        <p class="subhead">Where devs get confused</p>
+        <div class="confuse">
+          <span class="confuse-title">"Do I need @Binding or just a plain let?"</span>
+          If the child only <b>displays</b> the value → plain <code>let</code>. If the child needs to <b>change</b> a value that the parent owns (a custom toggle, a custom stepper, a custom text field wrapper) → @Binding.
+        </div>
+        <div class="confuse">
+          <span class="confuse-title">"Can I make up a Binding without real @State behind it?"</span>
+          Yes — <code>Binding(get:set:)</code> lets you construct one manually, useful for transforming a value on the way in/out (e.g. binding a Double to a TextField that only understands String). See the Lists & Forms section for an example.
+        </div>
+      </div>
+
+      <!-- @ViewBuilder -->
+      <div class="card" data-tags="viewbuilder multiple views closure conditional container">
+        <h3>@ViewBuilder</h3>
+        <p class="lede">Lets a function, closure, or computed property return <b>multiple views, or conditionally different views</b>, stitched together — this is literally what makes writing several lines inside <code>body { }</code> legal at all.</p>
+
+        <p class="subhead">In simple terms</p>
+        <p class="explain">Normally, a Swift function can only return ONE type. But your <code>body</code> often contains several Text/Image/Button lines stacked — that only compiles because <code>body</code> is secretly marked @ViewBuilder, and Swift stitches those separate views into one combined "TupleView" behind the scenes. You can add this same power to your own custom functions/containers.</p>
+
+        <pre>struct CardContainer<Content: View>: View {
+    @ViewBuilder let content: Content   <span class="cm">// accepts multiple views as a block</span>
+    var body: some View {
+        VStack { content }
+            .padding()
+            .background(Color.white)
+            .cornerRadius(12)
+    }
+}
+
+<span class="cm">// Usage</span>
+CardContainer {
+    Text("Title")
+    Text("Subtitle")
+    Image(systemName: "star")
+}
+
+<span class="cm">// Conditional views from a helper function</span>
+@ViewBuilder
+func statusView(isLoading: Bool) -> some View {
+    if isLoading { ProgressView() } else { Text("Done") }
+}</pre>
+
+        <p class="subhead">Where devs get confused</p>
+        <div class="confuse">
+          <span class="confuse-title">"Cannot convert value of type... to closure result type 'some View'"</span>
+          This error usually means you tried to put an if/else with different view types (or a loose statement) inside a function/closure that ISN'T marked @ViewBuilder. Add @ViewBuilder to the function signature to fix it.
+        </div>
+      </div>
+
+      <!-- @AppStorage -->
+      <div class="card" data-tags="appstorage userdefaults persist simple settings">
+        <h3>@AppStorage</h3>
+        <p class="lede">Reads and writes directly to <b>UserDefaults</b>, and automatically refreshes the view when the stored value changes.</p>
+        <p class="explain">Good for small, simple settings that should survive an app relaunch — theme choice, "has seen onboarding" flag, a saved filter preference. Not meant for large or structured data (use a real persistence layer like SwiftData/CoreData for that, similar to how you built PocketLedger).</p>
+        <pre>@AppStorage("hasSeenOnboarding") var hasSeenOnboarding = false</pre>
+        <div class="confuse">
+          <span class="confuse-title">"I'm storing a whole struct/array and it's acting weird"</span>
+          @AppStorage natively supports simple types (Bool, Int, Double, String, URL, Data). For anything more complex, encode it to Data (JSON) yourself, or better, don't use @AppStorage for it at all.
+        </div>
+      </div>
+
+      <!-- @FocusState -->
+      <div class="card" data-tags="focusstate keyboard textfield focus">
+        <h3>@FocusState</h3>
+        <p class="lede">Tracks and controls <b>which text field / input currently has keyboard focus</b>, and lets you move focus or dismiss the keyboard from code.</p>
+        <pre>enum Field { case email, password }
+@FocusState private var focusedField: Field?
+
+TextField("Email", text: $email)
+    .focused($focusedField, equals: .email)
+
+focusedField = .email   <span class="cm">// sets focus programmatically</span>
+focusedField = nil      <span class="cm">// dismisses keyboard</span></pre>
+        <div class="tip">Common real use: pressing "return" on the email field should jump focus to the password field — set <code>.onSubmit { focusedField = .password }</code>.</div>
+      </div>
+
+      <!-- @Namespace -->
+      <div class="card" data-tags="namespace matchedgeometryeffect animation shared transition">
+        <h3>@Namespace</h3>
+        <p class="lede">Required for <b>matchedGeometryEffect</b> — the "hero" shared-element animation where one view appears to morph into another across two different view states.</p>
+        <pre>@Namespace private var animation
+
+Image("thumb")
+    .matchedGeometryEffect(id: "hero", in: animation)</pre>
+        <div class="confuse">
+          <span class="confuse-title">"The animation just jumps, doesn't smoothly morph"</span>
+          Both the source and destination view must be wrapped in the same <code>@Namespace</code> and the change must happen inside a <code>withAnimation</code> block, and typically one of the two views must be conditionally shown/hidden (not both on screen permanently) for the effect to visibly animate between them.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DATA FLOW ============ -->
+    <section class="category" id="data-flow">
+      <div class="category-head">
+        <h2>Passing Data Between Screens / Files</h2>
+        <span class="sub">Swift ↔ Swift, Swift ↔ SwiftUI, SwiftUI ↔ SwiftUI — every direction</span>
+      </div>
+
+      <div class="card" data-tags="parent to child readonly pass data init">
+        <h3><span class="plain">SwiftUI → SwiftUI, read-only</span></h3>
+        <p class="explain">If the child view only needs to <b>display</b> data and never change it, don't overthink it — pass it as a plain constant through the initializer, exactly like passing an argument to any Swift function.</p>
+        <pre>struct DetailView: View {
+    let article: Article
+    var body: some View { Text(article.title) }
+}
+NavigationLink(destination: DetailView(article: selectedArticle)) {
+    Text("Open")
+}</pre>
+        <div class="confuse"><span class="confuse-title">Common mistake</span>Reaching for @Binding or an ObservableObject here "just in case" adds unnecessary complexity. If it's read-only, a plain <code>let</code> is correct and simplest.</div>
+      </div>
+
+      <div class="card" data-tags="child modifies parent binding two way">
+        <h3><span class="plain">SwiftUI → SwiftUI, child modifies parent's value</span></h3>
+        <p class="explain">Use <b>@Binding</b> (fully explained above). The parent owns an @State value and hands the child a live two-way reference with <code>$value</code>.</p>
+      </div>
+
+      <div class="card" data-tags="shared viewmodel many views mvvm">
+        <h3><span class="plain">Sharing one class instance across many views</span></h3>
+        <p class="explain">Own the object once with <b>@StateObject</b> at the screen that first needs it, then pass the SAME instance down to children as <b>@ObservedObject</b>. If truly global (needed by unrelated tabs/screens), inject with <b>.environmentObject()</b> instead of threading it through every initializer.</p>
+      </div>
+
+      <div class="card" data-tags="child sends data back parent closure callback">
+        <h3><span class="plain">Sending data back from a child screen</span></h3>
+        <p class="explain">Three patterns, ordered from simplest to most powerful:</p>
+        <pre><span class="cm">// 1. Binding — simplest, works when both views are alive together in the same hierarchy</span>
+@Binding var selectedColor: Color
+
+<span class="cm">// 2. Closure callback — great for one-time results, e.g. a picker screen</span>
+struct PickerView: View {
+    var onSelect: (String) -> Void
+    var body: some View { Button("Pick Apple") { onSelect("Apple") } }
+}
+PickerView(onSelect: { picked in self.fruit = picked })
+
+<span class="cm">// 3. Shared ObservableObject — best for async/complex flows</span>
+<span class="cm">// child updates a @Published property on the shared object,</span>
+<span class="cm">// parent automatically re-renders because it observes the same object — no explicit "send back" needed</span></pre>
+        <div class="confuse">
+          <span class="confuse-title">"My closure callback isn't firing"</span>
+          Usually means the child view got dismissed (e.g. sheet closed) before the async work calling the closure finished, or the closure captured a stale/old reference. Double check you're not accidentally capturing <code>self</code> strongly in a way that got deallocated, and that the callback is actually invoked on the path you expect (add a print statement to confirm).
+        </div>
+      </div>
+
+      <div class="card" data-tags="plain swift class struct no ui service model">
+        <h3><span class="plain">Plain Swift → plain Swift (no UI involved)</span></h3>
+        <p class="explain">This is just ordinary Swift — no property wrappers needed unless the result needs to trigger a UI update somewhere downstream.</p>
+        <pre>struct NetworkService {
+    func fetchUser() -> User { /* ... */ }
+}
+class UserManager {
+    var currentUser: User?
+    func updateUser(_ user: User) { currentUser = user }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="service model viewmodel bridge mvvm architecture">
+        <h3><span class="plain">Plain Swift file (Model/Service) → SwiftUI View</span></h3>
+        <p class="explain">The Model and Service layers stay plain Swift — no SwiftUI import needed. The <b>ViewModel</b> (an ObservableObject) is the bridge that calls the service, stores results in @Published properties, and the View simply observes the ViewModel. This is the MVVM flow underlying your PocketLedger, Memoize, and Zenith projects.</p>
+        <pre>Model (struct, Codable)
+   → Service (plain Swift, fetch/transform data)
+        → ViewModel (@Published properties, ObservableObject)
+             → View (@StateObject / @ObservedObject, reads @Published)</pre>
+      </div>
+
+      <div class="card" data-tags="deep link tab unrelated hierarchy singleton notificationcenter">
+        <h3><span class="plain">Unrelated view hierarchies (deep links, tab switches, no shared parent)</span></h3>
+        <p class="explain">Options, in order of preference: <b>@EnvironmentObject</b> injected at the app root (best for most app state); a shared <b>singleton</b> service (<code>.shared</code>) for things like a NetworkMonitor that truly is a single global resource; or, rarely, <b>NotificationCenter</b>, mostly reserved for bridging with older UIKit code.</p>
+        <div class="confuse">
+          <span class="confuse-title">"Should I just make everything a singleton?"</span>
+          Overusing singletons for app state makes testing and reasoning about data flow harder (any code anywhere can silently mutate global state). Prefer @EnvironmentObject for anything tied to a user session or app-level UI state; reserve true singletons for stateless-ish utilities.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMBINE & ASYNC ============ -->
+    <section class="category" id="combine-async">
+      <div class="category-head">
+        <h2>Combine &amp; Async</h2>
+        <span class="sub">AnyPublisher, .map, .sink, and when async/await is the better tool</span>
+      </div>
+
+      <div class="card" data-tags="anypublisher datataskpublisher map decode receive erasetoanypublisher network">
+        <h3><span class="plain">AnyPublisher network call, line by line</span></h3>
+        <p class="explain">This pattern replaces the old completion-handler style (<code>URLSession.shared.dataTask { data, response, error in ... }</code>) with a chain of small, composable transformation steps.</p>
+        <pre>func topHeadlines() -> AnyPublisher<NewsResponse, Error> {
+    return URLSession.shared.dataTaskPublisher(for: request)
+        .map(\.data)
+        .decode(type: NewsResponse.self, decoder: JSONDecoder())
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+}</pre>
+        <ul class="explain-list">
+          <li><b>dataTaskPublisher(for:)</b> — starts the network call. Emits a <code>(data: Data, response: URLResponse)</code> tuple, or fails with an error.</li>
+          <li><b>.map(\.data)</b> — shorthand for <code>.map { $0.data }</code>; keeps only the raw Data, discards the URLResponse metadata.</li>
+          <li><b>.decode(type:decoder:)</b> — feeds the Data through JSONDecoder, turning it into your NewsResponse model. Fails automatically if the JSON doesn't match your Codable struct.</li>
+          <li><b>.receive(on: DispatchQueue.main)</b> — switches everything downstream to the main thread. <b>Required</b> before touching @Published properties, because UI updates must happen on the main thread.</li>
+          <li><b>.eraseToAnyPublisher()</b> — hides the long, ugly concrete generic type (something like <code>Publishers.MapError&lt;Publishers.Decode&lt;...&gt;&gt;</code>) behind the simple, stable <code>AnyPublisher&lt;NewsResponse, Error&gt;</code> signature.</li>
+        </ul>
+        <div class="confuse">
+          <span class="confuse-title">"Why erase the type at all — can't I just return the real type?"</span>
+          You technically can, but every time you add/remove/reorder an operator in the chain, the concrete return type changes too, forcing you to update the function signature everywhere it's used. AnyPublisher gives you a stable "public API" so the caller never needs to know or care what's happening internally.
+        </div>
+      </div>
+
+      <div class="card" data-tags="sink subscribe cancellable store consume publisher viewmodel">
+        <h3><span class="plain">Consuming an AnyPublisher in a ViewModel</span></h3>
+        <pre>private var cancellables = Set<AnyCancellable>()
+
+func loadHeadlines() {
+    isLoading = true
+    service.topHeadlines()
+        .sink(receiveCompletion: { [weak self] completion in
+            self?.isLoading = false
+            if case .failure(let error) = completion {
+                self?.errorMessage = error.localizedDescription
+            }
+        }, receiveValue: { [weak self] response in
+            self?.articles = response.articles
+        })
+        .store(in: &cancellables)
+}</pre>
+        <ul class="explain-list">
+          <li><b>.sink</b> has two closures: <code>receiveCompletion</code> fires exactly once, either <code>.finished</code> or <code>.failure(error)</code>. <code>receiveValue</code> fires each time a new value arrives (once, for a network call).</li>
+          <li><b>.store(in: &cancellables)</b> keeps the subscription alive — a Combine subscription is a live object, and if nothing holds a reference to it, it's deallocated (and cancelled) instantly.</li>
+          <li><b>[weak self]</b> avoids a retain cycle between the closure and the ViewModel, same rule as classic completion handlers.</li>
+        </ul>
+        <div class="confuse">
+          <span class="confuse-title">"My publisher never seems to fire / nothing happens"</span>
+          The #1 cause: forgetting <code>.store(in: &cancellables)</code>. Without it, the subscription is deallocated the instant the function returns, before the network call even completes.
+        </div>
+      </div>
+
+      <div class="card" data-tags="map operator transform combine">
+        <h3><span class="plain">.map — general use beyond networking</span></h3>
+        <p class="explain">Transforms each value flowing through the pipeline into something else — conceptually identical to <code>Array.map</code>, just applied to a stream of events over time instead of a fixed collection.</p>
+        <pre>$searchText
+    .map { $0.lowercased() }
+    .sink { print($0) }</pre>
+      </div>
+
+      <div class="card" data-tags="debounce removeduplicates search as you type combine live">
+        <h3><span class="plain">Debounced live search</span></h3>
+        <p class="explain">A very common intermediate Combine pattern — wait for the user to pause typing before actually firing a search, and skip firing again if the text didn't actually change.</p>
+        <pre>$searchQuery
+    .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+    .removeDuplicates()
+    .sink { [weak self] query in self?.performSearch(query) }
+    .store(in: &cancellables)</pre>
+      </div>
+
+      <div class="card" data-tags="assign publisher property pipe">
+        <h3><span class="plain">.assign(to:on:)</span></h3>
+        <p class="explain">An alternative to <code>.sink</code> when you just want to pipe emitted values directly into a property, with no custom logic needed on receipt.</p>
+        <pre>publisher.assign(to: \.articles, on: self)</pre>
+        <div class="confuse"><span class="confuse-title">Gotcha</span><code>.assign(to:on:)</code> can create a retain cycle since it strongly captures the target — many devs prefer <code>.sink</code> with <code>[weak self]</code> instead, or the newer <code>.assign(to: &$property)</code> syntax when assigning to a @Published property.</div>
+      </div>
+
+      <div class="card" data-tags="combinelatest merge two publishers">
+        <h3><span class="plain">.combineLatest</span></h3>
+        <p class="explain">Merges two (or more) publishers, re-emitting a combined value any time EITHER one changes. Useful for form validation that depends on multiple @Published fields at once.</p>
+        <pre>Publishers.CombineLatest($email, $password)
+    .map { email, password in !email.isEmpty && password.count >= 8 }
+    .assign(to: &$isFormValid)</pre>
+      </div>
+
+      <div class="card" data-tags="async await task modern network vs combine">
+        <h3><span class="plain">async/await — the modern alternative</span></h3>
+        <p class="explain">Prefer <b>async/await</b> for simple one-shot calls — no AnyCancellable bookkeeping, reads top-to-bottom like normal code. Prefer <b>Combine</b> for continuous streams: live search debouncing, WebSocket/SSE-style continuous data (relevant to your LivePulse and Memoize projects), or reacting to several @Published values at once.</p>
+        <pre>func topHeadlines() async throws -> NewsResponse {
+    let (data, _) = try await URLSession.shared.data(for: request)
+    return try JSONDecoder().decode(NewsResponse.self, from: data)
+}
+
+<span class="cm">// calling it inside a View</span>
+.task {
+    do { articles = try await service.topHeadlines() }
+    catch { errorMessage = error.localizedDescription }
+}</pre>
+        <div class="tip">Many real codebases mix both: Combine for reactive UI state and debouncing, async/await for straightforward one-off fetches. Neither fully replaces the other.</div>
+      </div>
+    </section>
+
+    <!-- ============ CONCURRENCY & ACTORS ============ -->
+    <section class="category" id="concurrency">
+      <div class="category-head">
+        <h2>Concurrency &amp; Actors</h2>
+        <span class="sub">Task, MainActor, actors — the modern Swift concurrency system</span>
+      </div>
+
+      <div class="card" data-tags="task async launch background work">
+        <h3><span class="plain">Task { } — launching async work</span></h3>
+        <p class="explain">Starts a new unit of async work from a non-async context — e.g. inside a button action (which is synchronous) but you need to call an async function.</p>
+        <pre>Button("Refresh") {
+    Task {
+        await viewModel.loadHeadlines()
+    }
+}</pre>
+        <div class="tip">Prefer <code>.task { }</code> modifier over manually writing <code>Task { }</code> inside <code>.onAppear</code> — .task auto-cancels when the view disappears, a plain Task does not.</div>
+      </div>
+
+      <div class="card" data-tags="mainactor thread ui update main thread crash">
+        <h3><span class="plain">@MainActor</span></h3>
+        <p class="explain">Guarantees code runs on the main thread — required for anything touching the UI or @Published properties. Mark a whole ViewModel class @MainActor instead of manually dispatching to main everywhere.</p>
+        <pre>@MainActor
+class NewsViewModel: ObservableObject {
+    @Published var articles: [Article] = []
+
+    func load() async {
+        let response = try? await service.fetchHeadlines()
+        articles = response?.articles ?? []   <span class="cm">// safely on main thread, guaranteed</span>
+    }
+}</pre>
+        <div class="confuse"><span class="confuse-title">"Publishing changes from background threads is not allowed" warning</span>This means you updated a @Published property from a background thread. Fix by marking the ViewModel (or just the function) @MainActor, or wrapping the update in <code>await MainActor.run { ... }</code>.</div>
+      </div>
+
+      <div class="card" data-tags="actor data race thread safety shared mutable state">
+        <h3><span class="plain">actor — thread-safe shared state</span></h3>
+        <p class="explain">A class-like reference type where Swift automatically prevents two threads from accessing its mutable state at the same time — eliminates a whole category of data-race bugs without manual locks.</p>
+        <pre>actor Cache {
+    private var storage: [String: Data] = [:]
+    func set(_ data: Data, for key: String) { storage[key] = data }
+    func get(_ key: String) -> Data? { storage[key] }
+}
+
+<span class="cm">// must await when calling from outside the actor</span>
+await cache.set(data, for: "key")</pre>
+        <div class="confuse"><span class="confuse-title">When would I actually reach for this?</span>Rare in typical SwiftUI app code (ObservableObject + @MainActor covers most needs) — actors shine for shared caches, network layers, or any state accessed concurrently from multiple background tasks at once.</div>
+      </div>
+
+      <div class="card" data-tags="async let parallel concurrent multiple calls">
+        <h3><span class="plain">async let — running things in parallel</span></h3>
+        <pre>async func loadDashboard() async {
+    async let headlines = fetchHeadlines()
+    async let weather = fetchWeather()
+    let (h, w) = await (headlines, weather)   <span class="cm">// both run concurrently, not one after another</span>
+}</pre>
+      </div>
+    </section>
+
+    <!-- ============ VIEW MODIFIERS ============ -->
+    <section class="category" id="view-modifiers">
+      <div class="category-head">
+        <h2>View Modifiers You Always Forget</h2>
+        <span class="sub">the ones that slip your mind mid-build</span>
+      </div>
+
+      <div class="card" data-tags="onappear task lifecycle load data view appears">
+        <h3><span class="plain">.onAppear vs .task</span></h3>
+        <p class="explain">Both run code when a view appears, but they behave very differently with async work. <b>.task</b> is structured-concurrency aware: if the view disappears before the async work finishes, the task is automatically cancelled. <b>.onAppear</b> is synchronous-minded and doesn't cancel anything on its own.</p>
+        <pre>.task { await viewModel.load() }       <span class="cm">// preferred for async work</span>
+.onAppear { print("appeared") }        <span class="cm">// fine for simple sync side-effects</span></pre>
+        <div class="confuse"><span class="confuse-title">"My network call keeps re-firing"</span>.onAppear can fire more often than expected (e.g. when a view reappears after a sheet dismisses). If you only want a one-time load, guard with a flag, or use .task which is more predictable for async loading.</div>
+      </div>
+
+      <div class="card" data-tags="frame size width height">
+        <h3><span class="plain">.frame</span></h3>
+        <pre>.frame(width: 100, height: 40)
+.frame(maxWidth: .infinity, alignment: .leading)</pre>
+        <p class="explain">Fixed frame vs <code>maxWidth: .infinity</code> confuses beginners — a fixed frame locks the exact size; <code>maxWidth: .infinity</code> tells the view to expand and fill whatever space is available, which is what you usually want for full-width buttons/rows.</p>
+      </div>
+
+      <div class="card" data-tags="padding background cornerradius shadow style card order matters">
+        <h3><span class="plain">Card-style stack — padding / background / cornerRadius / shadow</span></h3>
+        <pre>.padding(16)
+.background(Color(.systemBackground))
+.cornerRadius(12)
+.shadow(color: .black.opacity(0.08), radius: 8, y: 4)</pre>
+        <div class="confuse"><span class="confuse-title">"My background doesn't include the padding" / "my corner radius looks wrong"</span>Modifier <b>order matters</b> in SwiftUI — each modifier wraps the previous result. Padding must come <b>before</b> background so the background box includes that padding; cornerRadius must come after background so it actually clips the colored box, not just the content inside it.</div>
+      </div>
+
+      <div class="card" data-tags="overlay clipshape border stroke rounded">
+        <h3><span class="plain">.overlay + .clipShape (border trick)</span></h3>
+        <pre>.clipShape(RoundedRectangle(cornerRadius: 12))
+.overlay(
+    RoundedRectangle(cornerRadius: 12)
+        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+)</pre>
+        <p class="explain">.cornerRadius alone doesn't give you a visible border — you clip the shape, then overlay a stroked copy of the same shape on top to draw the border.</p>
+      </div>
+
+      <div class="card" data-tags="disabled opacity conditional style button state">
+        <h3><span class="plain">Conditional disabling</span></h3>
+        <pre>Button("Submit") { submit() }
+    .disabled(email.isEmpty)
+    .opacity(email.isEmpty ? 0.5 : 1)</pre>
+        <div class="tip">.disabled() alone doesn't visually communicate anything — always pair it with an opacity or color change so the user can SEE the button is inactive.</div>
+      </div>
+
+      <div class="card" data-tags="safeareainset toolbar bottom bar keyboard avoid">
+        <h3><span class="plain">.safeAreaInset — sticky bottom bar</span></h3>
+        <pre>ScrollView { content }
+    .safeAreaInset(edge: .bottom) {
+        Button("Continue") { }.padding()
+    }</pre>
+        <p class="explain">Better than manually adding padding to the bottom of scroll content — this reserves the space AND keeps the bar pinned above the home indicator/keyboard automatically.</p>
+      </div>
+
+      <div class="card" data-tags="redacted placeholder loading skeleton">
+        <h3><span class="plain">.redacted — skeleton loading state</span></h3>
+        <pre>Text(article.title)
+    .redacted(reason: isLoading ? .placeholder : [])</pre>
+        <p class="explain">Quick way to show a blurred "skeleton" placeholder instead of building custom shimmering gray boxes by hand.</p>
+      </div>
+    </section>
+
+    <!-- ============ NAVIGATION ============ -->
+    <section class="category" id="navigation">
+      <div class="category-head">
+        <h2>Navigation &amp; Presentation</h2>
+        <span class="sub">sheets, alerts, nav stacks, dismiss</span>
+      </div>
+
+      <div class="card" data-tags="navigationstack navigationlink push path programmatic">
+        <h3><span class="plain">NavigationStack (iOS 16+)</span></h3>
+        <p class="explain">Replaced the older NavigationView. The big advantage: a <code>path</code> array you can manipulate programmatically to push/pop screens from code (deep linking, "go back 3 screens after saving," etc.), not just from user taps.</p>
+        <pre>NavigationStack(path: $path) {
+    List(items) { item in
+        NavigationLink(item.name, value: item)
+    }
+    .navigationDestination(for: Item.self) { item in
+        DetailView(item: item)
+    }
+}
+<span class="cm">// programmatic push</span>
+path.append(newItem)
+<span class="cm">// pop to root</span>
+path.removeLast(path.count)</pre>
+      </div>
+
+      <div class="card" data-tags="sheet present modal bool item">
+        <h3><span class="plain">.sheet — bool vs item</span></h3>
+        <pre>.sheet(isPresented: $showSheet) { DetailView() }
+
+<span class="cm">// item-based — auto-unwraps an optional, cleaner when the sheet needs specific data</span>
+.sheet(item: $selectedArticle) { article in
+    DetailView(article: article)
+}</pre>
+        <div class="confuse"><span class="confuse-title">"Which one should I use?"</span>If the sheet needs no external data → <code>isPresented</code>. If the sheet displays a specific optional object (e.g. tapping a row opens details for THAT row) → <code>item:</code>, since it avoids a separate bool + separate "currently selected" variable that can get out of sync.</div>
+      </div>
+
+      <div class="card" data-tags="alert confirmationdialog error message">
+        <h3><span class="plain">.alert</span></h3>
+        <pre>.alert("Error", isPresented: $showError, presenting: errorMessage) { _ in
+    Button("OK", role: .cancel) { }
+} message: { message in
+    Text(message)
+}</pre>
+      </div>
+
+      <div class="card" data-tags="dismiss close sheet environment">
+        <h3><span class="plain">Dismissing a sheet from inside</span></h3>
+        <pre>@Environment(\.dismiss) var dismiss
+Button("Done") { dismiss() }</pre>
+      </div>
+
+      <div class="card" data-tags="tabview tab bar bottom navigation">
+        <h3><span class="plain">TabView</span></h3>
+        <pre>TabView {
+    HomeView()
+        .tabItem { Label("Home", systemImage: "house") }
+    ProfileView()
+        .tabItem { Label("Profile", systemImage: "person") }
+}</pre>
+      </div>
+    </section>
+
+    <!-- ============ LISTS & FORMS ============ -->
+    <section class="category" id="lists-forms">
+      <div class="category-head">
+        <h2>Lists &amp; Forms</h2>
+        <span class="sub">ForEach, swipe actions, pickers</span>
+      </div>
+
+      <div class="card" data-tags="foreach identifiable id list">
+        <h3><span class="plain">ForEach needs Identifiable</span></h3>
+        <pre>struct Article: Identifiable {
+    let id = UUID()
+    let title: String
+}
+List(articles) { article in Text(article.title) }
+<span class="cm">// no Identifiable? use: ForEach(articles, id: \.title)</span></pre>
+        <div class="confuse"><span class="confuse-title">"Fatal error / weird row glitches when list updates"</span>If your id isn't actually unique/stable (e.g. using array index as id), SwiftUI can misattribute rows during animation/reordering, causing visual glitches. Prefer a real stable UUID.</div>
+      </div>
+
+      <div class="card" data-tags="swipeactions delete edit list row">
+        <h3><span class="plain">.swipeActions</span></h3>
+        <pre>.swipeActions(edge: .trailing) {
+    Button(role: .destructive) { delete(item) } label: {
+        Label("Delete", systemImage: "trash")
+    }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="picker segmented dropdown form">
+        <h3><span class="plain">Picker styles</span></h3>
+        <pre>Picker("Category", selection: $selected) {
+    ForEach(categories, id: \.self) { Text($0) }
+}
+.pickerStyle(.segmented)  <span class="cm">// or .menu, .wheel</span></pre>
+      </div>
+
+      <div class="card" data-tags="form section textfield secure input">
+        <h3><span class="plain">Form + Section</span></h3>
+        <pre>Form {
+    Section("Account") {
+        TextField("Email", text: $email)
+        SecureField("Password", text: $password)
+    }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="binding custom get set optional unwrap transform">
+        <h3><span class="plain">Custom Binding (Binding get/set)</span></h3>
+        <p class="explain">Use when you need to transform a value on the way in and out — the classic example is binding a numeric Double to a TextField, which only understands String.</p>
+        <pre>Binding<String>(
+    get: { String(amount) },
+    set: { amount = Double($0) ?? 0 }
+)</pre>
+      </div>
+    </section>
+
+    <!-- ============ LAYOUT ============ -->
+    <section class="category" id="layout">
+      <div class="category-head">
+        <h2>Layout Tools</h2>
+        <span class="sub">grids, geometry, spacing</span>
+      </div>
+
+      <div class="card" data-tags="lazyvgrid lazyhgrid grid columns">
+        <h3><span class="plain">LazyVGrid</span></h3>
+        <pre>let columns = [GridItem(.flexible()), GridItem(.flexible())]
+LazyVGrid(columns: columns, spacing: 12) {
+    ForEach(items) { item in CardView(item: item) }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="geometryreader size parent responsive">
+        <h3><span class="plain">GeometryReader</span></h3>
+        <p class="explain">Reads the available size from the parent. Use sparingly — it greedily expands to fill all available space by default, which can throw off your layout if you're not careful.</p>
+        <pre>GeometryReader { geo in
+    Rectangle().frame(width: geo.size.width * 0.5)
+}</pre>
+      </div>
+
+      <div class="card" data-tags="spacer zstack overlay align">
+        <h3><span class="plain">Spacer &amp; alignment</span></h3>
+        <pre>HStack {
+    Text("Left")
+    Spacer()
+    Text("Right")
+}
+ZStack(alignment: .bottomTrailing) { image; badge }</pre>
+      </div>
+    </section>
+
+    <!-- ============ ANIMATION & GESTURES ============ -->
+    <section class="category" id="animation-gesture">
+      <div class="category-head">
+        <h2>Animation &amp; Gestures</h2>
+        <span class="sub">withAnimation, transitions, taps and drags</span>
+      </div>
+
+      <div class="card" data-tags="withanimation animatable transition">
+        <h3><span class="plain">withAnimation</span></h3>
+        <pre>withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+    isExpanded.toggle()
+}</pre>
+        <div class="confuse"><span class="confuse-title">"My change doesn't animate"</span>The state change must happen INSIDE the withAnimation closure. Changing state elsewhere and hoping a nearby withAnimation call catches it won't work.</div>
+      </div>
+
+      <div class="card" data-tags="transition insertion removal appear disappear">
+        <h3><span class="plain">.transition</span></h3>
+        <pre>if showCard {
+    CardView()
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+}</pre>
+        <div class="tip">.transition only animates when the view is being inserted/removed from the hierarchy (e.g. behind an if), not for ordinary property changes — pair it with withAnimation around the state toggle.</div>
+      </div>
+
+      <div class="card" data-tags="gesture tap drag longpress">
+        <h3><span class="plain">Gestures</span></h3>
+        <pre>.gesture(
+    DragGesture()
+        .onChanged { value in offset = value.translation }
+        .onEnded { _ in withAnimation { offset = .zero } }
+)
+.onTapGesture { print("tapped") }
+.onLongPressGesture { print("long pressed") }</pre>
+      </div>
+    </section>
+
+    <!-- ============ ARCHITECTURE PATTERNS ============ -->
+    <section class="category" id="architecture">
+      <div class="category-head">
+        <h2>Architecture Patterns</h2>
+        <span class="sub">MVVM, dependency injection, singletons — how it all fits together</span>
+      </div>
+
+      <div class="card" data-tags="mvvm model view viewmodel architecture pattern">
+        <h3><span class="plain">MVVM in SwiftUI</span></h3>
+        <p class="explain">The dominant pattern in SwiftUI apps — the same one behind your PocketLedger, LivePulse, Memoize, and Zenith projects.</p>
+        <pre>Model      → plain struct, Codable, just data (Article, User, Trade)
+Service    → plain Swift class/struct, talks to network/database
+ViewModel  → ObservableObject, @Published state, calls Service, exposes clean data + actions
+View       → SwiftUI struct, @StateObject/@ObservedObject, purely displays + sends user actions</pre>
+        <p class="explain">The View should never talk to the Service directly, and should contain as little logic as possible — its job is display + forwarding user intent to the ViewModel.</p>
+      </div>
+
+      <div class="card" data-tags="dependency injection testing mock protocol service">
+        <h3><span class="plain">Dependency Injection (why services are often protocols)</span></h3>
+        <p class="explain">Instead of a ViewModel creating its own Service directly, pass the Service in from outside (through init) — usually typed as a protocol so you can substitute a fake/mock version in tests or SwiftUI Previews.</p>
+        <pre>protocol NewsServicing {
+    func topHeadlines() -> AnyPublisher<NewsResponse, Error>
+}
+
+class NewsViewModel: ObservableObject {
+    private let service: NewsServicing
+    init(service: NewsServicing = NewsService()) {   <span class="cm">// default = real one, override in tests</span>
+        self.service = service
+    }
+}
+
+<span class="cm">// In tests / Previews:</span>
+class MockNewsService: NewsServicing {
+    func topHeadlines() -> AnyPublisher<NewsResponse, Error> {
+        Just(NewsResponse(articles: [])).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+}</pre>
+      </div>
+
+      <div class="card" data-tags="singleton shared instance global static">
+        <h3><span class="plain">Singleton pattern (.shared)</span></h3>
+        <pre>class NetworkMonitor {
+    static let shared = NetworkMonitor()
+    private init() {}   <span class="cm">// prevents anyone else from creating another instance</span>
+    var isConnected = true
+}
+
+<span class="cm">// used anywhere as:</span>
+NetworkMonitor.shared.isConnected</pre>
+        <div class="confuse"><span class="confuse-title">When is a singleton actually appropriate?</span>Genuinely single, app-wide resources (a network reachability monitor, a logging system). Avoid it for anything resembling app/user state — that's what @EnvironmentObject + dependency injection is for; overusing singletons makes testing and reasoning about your app much harder.</div>
+      </div>
+    </section>
+
+    <!-- ============ DECISION TABLES ============ -->
+    <section class="category" id="decision-tables">
+      <div class="category-head">
+        <h2>Quick Decision Tables</h2>
+        <span class="sub">when in doubt, scan these</span>
+      </div>
+
+      <div class="card" data-tags="decision table struct class value reference which one">
+        <h3><span class="plain">Struct or Class?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Use</th></tr>
+          <tr><td>Plain data / model (Article, User, Trade)</td><td>struct</td></tr>
+          <tr><td>SwiftUI View</td><td>struct (required)</td></tr>
+          <tr><td>ViewModel / shared mutable state observed by views</td><td>class + ObservableObject</td></tr>
+          <tr><td>Need inheritance</td><td>class</td></tr>
+          <tr><td>Need identity (is this the SAME instance as that one?)</td><td>class</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table weak unowned strong which one memory">
+        <h3><span class="plain">weak, unowned, or strong?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Use</th></tr>
+          <tr><td>Normal property ownership (default case)</td><td>strong (no keyword needed)</td></tr>
+          <tr><td>Closure captures self, closure may outlive the call (Combine, completion handlers)</td><td>weak (safe default)</td></tr>
+          <tr><td>Delegate property (avoid parent↔child retain cycle)</td><td>weak</td></tr>
+          <tr><td>Certain the reference can never outlive this one</td><td>unowned (use sparingly)</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table property wrapper which one">
+        <h3><span class="plain">Property Wrapper — which one?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Wrapper</th></tr>
+          <tr><td>Simple value owned by this view</td><td>@State</td></tr>
+          <tr><td>Class instance created HERE (you wrote = ClassName())</td><td>@StateObject</td></tr>
+          <tr><td>Class instance received from parent</td><td>@ObservedObject</td></tr>
+          <tr><td>Property inside ObservableObject that should update UI</td><td>@Published</td></tr>
+          <tr><td>Reading system value (colorScheme, dismiss)</td><td>@Environment</td></tr>
+          <tr><td>Shared object needed app-wide</td><td>@EnvironmentObject</td></tr>
+          <tr><td>Child needs to write back to parent's value</td><td>@Binding</td></tr>
+          <tr><td>Container/function returning multiple/conditional views</td><td>@ViewBuilder</td></tr>
+          <tr><td>Small persisted setting</td><td>@AppStorage</td></tr>
+          <tr><td>Track/control which field is focused</td><td>@FocusState</td></tr>
+          <tr><td>Shared-element ("hero") animation between two views</td><td>@Namespace</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table combine async which one network">
+        <h3><span class="plain">Combine vs async/await — which one?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Use</th></tr>
+          <tr><td>One-shot network fetch</td><td>async/await</td></tr>
+          <tr><td>Continuous stream (WebSocket, SSE)</td><td>Combine</td></tr>
+          <tr><td>Debounced search-as-you-type</td><td>Combine</td></tr>
+          <tr><td>Reacting to multiple @Published sources at once</td><td>Combine (.combineLatest)</td></tr>
+          <tr><td>Simple sequential async calls</td><td>async/await</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table sheet present when item bool">
+        <h3><span class="plain">Presenting a sheet — bool or item?</span></h3>
+        <table class="decision">
+          <tr><th>Situation</th><th>Use</th></tr>
+          <tr><td>Simple on/off, no associated data</td><td>.sheet(isPresented:)</td></tr>
+          <tr><td>Need to pass a specific optional object</td><td>.sheet(item:)</td></tr>
+        </table>
+      </div>
+
+      <div class="card" data-tags="decision table data passing scenario which pattern">
+        <h3><span class="plain">Passing data — which pattern?</span></h3>
+        <table class="decision">
+          <tr><th>Scenario</th><th>Pattern</th></tr>
+          <tr><td>Child reads parent data only</td><td>Plain let via init</td></tr>
+          <tr><td>Child writes back a simple value</td><td>@Binding</td></tr>
+          <tr><td>Child sends back a one-time result</td><td>Closure callback</td></tr>
+          <tr><td>Many views need the same live data</td><td>Shared ObservableObject</td></tr>
+          <tr><td>Global app state (auth, theme)</td><td>@EnvironmentObject</td></tr>
+          <tr><td>Unrelated screens, no shared parent</td><td>Singleton service or EnvironmentObject at root</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <div class="empty-state" id="emptyState">
+      <h3>Nothing matches</h3>
+      <p>Try a shorter term — "state", "sheet", "publisher", "binding"…</p>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const search = document.getElementById('search');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const sections = Array.from(document.querySelectorAll('section.category'));
+  const emptyState = document.getElementById('emptyState');
+  const searchCount = document.getElementById('searchCount');
+  const catLinks = Array.from(document.querySelectorAll('#catNav a'));
+
+  function filter(){
+    const term = search.value.trim().toLowerCase();
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const haystack = (card.dataset.tags + ' ' + card.textContent).toLowerCase();
+      const match = term === '' || haystack.includes(term);
+      card.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+
+    sections.forEach(sec => {
+      const anyVisible = Array.from(sec.querySelectorAll('.card')).some(c => c.style.display !== 'none');
+      sec.style.display = anyVisible ? '' : 'none';
+    });
+
+    emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+    searchCount.textContent = term === '' ? '' : `${visibleCount} match${visibleCount === 1 ? '' : 'es'}`;
+  }
+
+  search.addEventListener('input', filter);
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        catLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`#catNav a[data-cat="${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(sec => observer.observe(sec));
+</script>
+
+</body>
+</html>
